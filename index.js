@@ -25,7 +25,7 @@ function makeSGP (mass1, mass2) { //sgp = standard gravitational parameter
     return sgp
 }
 
-function AUConvert (distance) {
+function AUConvert (distance) { //Meters to AU (astronomical units)
     let ans = distance * Math.pow(1.496, -11)
     return ans
 }
@@ -61,11 +61,11 @@ function update () {
 
 console.log(getOrbitalSpeed(earthMass, lunarMass, lunarSemiMajorAxis)) // this appears to be speed per year in km
 
-console.log(getOrbitalPeriod(earthMass, solarMass, earthSemiMajorAxis)) // days to revolve around the sun
+console.log(getOrbitalPeriod(earthMass, solarMass, earthSemiMajorAxis) + " Day Orbit") // days to revolve around the sun
 console.log(getOrbitalPeriod(earthMass, lunarMass, lunarSemiMajorAxis)) // days to revolve around the earth
 console.log(getGravitationalForce(earthMass, lunarMass, lunarSemiMajorAxis)) //N of force that the Earth-Lunar system has
 
-function classifyStar (starTemp) {
+function classifyStar (starTemp) { //I got lazy so I made a logic loop.
     for (let i=0; i < starClassArr.length; i++) {
         if (starTemp >= starClassArr[i][1] && starTemp < starClassArr[i][0]) {
             console.log(`It's a ${starClassArr[i][2]}-Class Star!`)
