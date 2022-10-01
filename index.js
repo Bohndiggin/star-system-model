@@ -13,6 +13,8 @@ const earthMass = 5.9722 * Math.pow(10, 24)
 const earthSemiMajorAxis = 149597887 
 const lunarMass = 7.342 * Math.pow(10, 22)
 const lunarSemiMajorAxis = 384399
+const jupiterMass = 1.899 * Math.pow(10, 27)
+const jupiterSemiMajorAxis = 5.2038 * oneAU
 
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 const starClassArr = [
@@ -71,7 +73,7 @@ function update () {
 function calcStarLuminosity(starTemp, starRadius) { //values must be relative to the sun.
     let area = 4 * Math.PI * Math.pow(starRadius, 2)
     let ans = sbConstant * area * Math.pow(starTemp, 4)
-    console.log(area + "lookee")
+    //console.log(area + "lookee")
     return ans
 }
 
@@ -82,11 +84,11 @@ function calcHabitableZone (luminosity) {
     return minmax
 }
 
-console.log(calcOrbitalSpeed(earthMass, lunarMass, lunarSemiMajorAxis)) // this appears to be speed per year in km
+// console.log(calcOrbitalSpeed(earthMass, lunarMass, lunarSemiMajorAxis)) // this appears to be speed per year in km
 
-console.log(calcOrbitalPeriod(earthMass, solarMass, earthSemiMajorAxis) + " Day Orbit") // days to revolve around the sun
-console.log(calcOrbitalPeriod(earthMass, lunarMass, lunarSemiMajorAxis)) // days to revolve around the earth
-console.log(calcGravitationalForce(earthMass, lunarMass, lunarSemiMajorAxis)) //N of force that the Earth-Lunar system has
+// console.log(calcOrbitalPeriod(earthMass, solarMass, earthSemiMajorAxis) + " Day Orbit") // days to revolve around the sun
+// console.log(calcOrbitalPeriod(earthMass, lunarMass, lunarSemiMajorAxis)) // days to revolve around the earth
+// console.log(calcGravitationalForce(earthMass, lunarMass, lunarSemiMajorAxis)) //N of force that the Earth-Lunar system has
 
 function classifyStar (starTemp) { //I got lazy so I made a logic loop.
     for (let i=0; i < starClassArr.length; i++) {
@@ -114,7 +116,14 @@ function createRandomStars(starNum) {
        }
     }
     console.log(results)
-    console.log(results[0][5])
+    //console.log(results[0][5])
+}
+
+function createRandomPlanets(planetNum) {
+    let results = []
+    for(let i = 0;i < planetNum;i++) {
+        let currentMass = ranDumb(0, 100)
+    }
 }
 
 //testing math here.
@@ -127,9 +136,9 @@ classifyStar(solarTemp, solarRadius)
 // console.log(calcStarLuminosity(solarTemp, 1))
 // console.log(calcHabitableZone(solarLuminosity))
 
-let lum = calcStarLuminosity(solarTemp, 1)
-console.log(lum)
+//let lum = calcStarLuminosity(solarTemp, 1)
+//console.log(lum)
 
-console.log(calcHabitableZone(lum))
+//console.log(calcHabitableZone(lum))
 
 createRandomStars(1)
