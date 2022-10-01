@@ -14,16 +14,20 @@ const earthSemiMajorAxis = 149597887
 const lunarMass = 7.342 * Math.pow(10, 22)
 const lunarSemiMajorAxis = 384399
 
-
+//max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 const starClassArr = [
-    [1000000, 30000, "O"],
-    [30000, 10000, "B"],
-    [10000, 7500, "A"],
-    [7500, 6000, "F"],
-    [6000, 5200, "G"],
-    [5200, 3700, "K"],
-    [3700, 2400, "M"]
+    [1000000, 30000, "O", 20, 16, 8, 6.6, 50000, 30000, 0.03],
+    [30000, 10000, "B", 16, 2.1, 6.6, 1.8, 30000, 25, 0.22],
+    [10000, 7500, "A", 2.1, 1.4, 1.8, 1.4, 25, 5, 0.6],
+    [7500, 6000, "F", 1.4, 1.04, 1.4, 1.15, 5, 1.5, 3],
+    [6000, 5200, "G", 1.04, 0.8, 1.15, 0.96, 1.5, 0.6, 7.6],
+    [5200, 3700, "K", 0.8, 0.45, 0.96, 0.7, 0.6, 0.08, 12.1],
+    [3700, 2400, "M", 0.45, 0.08, 0.07, 0.00001, 0.08, 0.00001, 76.45]
 ]
+
+function ranDumb(min, max) {
+    return (Math.random() * (max - min)) + min
+}
 
 function makeSGP (mass1, mass2) { //sgp = standard gravitational parameter
     let sgp = G * (mass1 + mass2)
@@ -72,9 +76,9 @@ function calcStarLuminosity(starTemp, starRadius) { //values must be relative to
 }
 
 function calcHabitableZone (luminosity) {
-    let min = Math.sqrt((luminosity/solarLuminosity)/0.53)
-    let max = Math.sqrt((luminosity/solarLuminosity)/1.1)
-    let minmax = [[min, max], [(min*oneAU), (max*oneAU)]]
+    let min = Math.sqrt((luminosity)/1.1)
+    let max = Math.sqrt((luminosity)/0.53)
+    let minmax = [min, max]
     return minmax
 }
 
@@ -84,22 +88,48 @@ console.log(calcOrbitalPeriod(earthMass, solarMass, earthSemiMajorAxis) + " Day 
 console.log(calcOrbitalPeriod(earthMass, lunarMass, lunarSemiMajorAxis)) // days to revolve around the earth
 console.log(calcGravitationalForce(earthMass, lunarMass, lunarSemiMajorAxis)) //N of force that the Earth-Lunar system has
 
-function classifyStar (starTemp, starRadius) { //I got lazy so I made a logic loop.
+function classifyStar (starTemp) { //I got lazy so I made a logic loop.
     for (let i=0; i < starClassArr.length; i++) {
         if (starTemp >= starClassArr[i][1] && starTemp < starClassArr[i][0]) {
             console.log(`It's a ${starClassArr[i][2]}-Class Star!`)
+            return `It's a ${starClassArr[i][2]}-Class Star!`
         } // once it's classified calculate the luminosity
     }
-    // let starMass = calcStarMass(starRadius)
-    let luminosity = calcStarLuminosity(starTemp, starRadius)
-    let habitalZone = calcHabitableZone(luminosity)
-    console.log(habitalZone) 
+}
+
+function createRandomStars(starNum) {
+    let results = []
+    for (let i = 0;i < starNum;i++) {
+       let currentClass = ranDumb(0, 10000)/100
+       for(let j = 0;j < starClassArr.length;j++) {
+        if (currentClass <= starClassArr[j][9]) {
+            let temperature = ranDumb(starClassArr[j][1], starClassArr[j][0])
+            let starMass = ranDumb(starClassArr[j][4], starClassArr[j][3])
+            let starRadius = ranDumb(starClassArr[j][6], starClassArr[j][5])
+            let starLuminosity = ranDumb(starClassArr[j][8], starClassArr[j][7])
+            let starClass = classifyStar(temperature)
+            let starHabitableZone = calcHabitableZone(starLuminosity)
+            results.push([temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone])
+        }
+       }
+    }
+    console.log(results)
+    console.log(results[0][5])
 }
 
 //testing math here.
 
 
 
+
 classifyStar(solarTemp, solarRadius)
 
-calcStarLuminosity(solarTemp, 1)
+// console.log(calcStarLuminosity(solarTemp, 1))
+// console.log(calcHabitableZone(solarLuminosity))
+
+let lum = calcStarLuminosity(solarTemp, 1)
+console.log(lum)
+
+console.log(calcHabitableZone(lum))
+
+createRandomStars(1)
