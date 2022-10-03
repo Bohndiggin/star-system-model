@@ -11,6 +11,7 @@ const solarTemp = 5772
 const mercuryMass = 3.3011 * Math.pow(10, 23)
 const mercuryTemp = 340.15
 const earthMass = 5.9722 * Math.pow(10, 24)
+const earthRadius = 6.3781 * Math.pow(10, 6)
 const earthSemiMajorAxis = 149597887
 const earthTemp = 288
 const lunarMass = 7.342 * Math.pow(10, 22)
@@ -69,22 +70,22 @@ function ranDumb(min, max) {
     return (Math.random() * (max - min)) + min
 }
 
-function makeSGP (mass1, mass2) { //sgp = standard gravitational parameter
+function makeSGP(mass1, mass2) { //sgp = standard gravitational parameter
     let sgp = G * (mass1 + mass2)
     return sgp
 }
 
-function AUConvert (distance) { //Meters to AU (astronomical units)
+function AUConvert(distance) { //Meters to AU (astronomical units)
     let ans = distance * Math.pow(1.496, -11)
     return ans
 }
 
-function calcOrbitalSpeed (mass1, mass2, semiMajorAxis) { //distance must be in km/s
+function calcOrbitalSpeed(mass1, mass2, semiMajorAxis) { //distance must be in km/s
     let ans = Math.sqrt(makeSGP(mass1, mass2)/semiMajorAxis)
     return ans * 1000 //km/year
 }
 
-function calcOrbitalSpeedKmps (mass1, mass2, semiMajorAxis) { // in case you want a normal number not a /year number
+function calcOrbitalSpeedKmps(mass1, mass2, semiMajorAxis) { // in case you want a normal number not a /year number
     let ans = calcOrbitalSpeed(mass1, mass2, semiMajorAxis)
     ans = ans/(3.154 * Math.pow(10, 7)) //What on space is this?? ANS it's how many seconds there are in a year.
     return ans
@@ -92,19 +93,19 @@ function calcOrbitalSpeedKmps (mass1, mass2, semiMajorAxis) { // in case you wan
 
 //console.log(calcOrbitalSpeedKmps(earthMass, solarMass, earthSemiMajorAxis))
 
-function calcOrbitalPeriod (mass1, mass2, semiMajorAxis) { //check against other planets.
+function calcOrbitalPeriod(mass1, mass2, semiMajorAxis) { //check against other planets.
     let orbitalSpeed = calcOrbitalSpeed(mass1, mass2, semiMajorAxis)
     let orbitLength = 2 * Math.PI * semiMajorAxis
     let ans = orbitLength / orbitalSpeed
     return (ans) * 366 //days to complete a revolution
 }
 
-function calcGravitationalForce (mass1, mass2, distance) { //Not sure if this is needed, but this may come in handy. It calculates the Force between 2 objects.
+function calcGravitationalForce(mass1, mass2, distance) { //Not sure if this is needed, but this may come in handy. It calculates the Force between 2 objects.
     let ans = G * ((mass1 + mass2)/Math.pow(distance, 2))
     return ans
 }
 
-function update () {
+function update() {
     //runs everything. Moves planets. Oh wait. I only need to find the speed once. Then the updater only needs to be fed speeds once
 }
 
@@ -115,7 +116,7 @@ function calcStarLuminosity(starTemp, starRadius) { //values must be relative to
     return ans
 }
 
-function calcHabitableZone (luminosity) {
+function calcHabitableZone(luminosity) {
     let min = Math.sqrt((luminosity)/1.1)
     let max = Math.sqrt((luminosity)/0.53)
     let minmax = [min, max]
@@ -123,7 +124,7 @@ function calcHabitableZone (luminosity) {
 }
 
 
-function classifyStar (starTemp) { //I got lazy so I made a logic loop.
+function classifyStar(starTemp) { //I got lazy so I made a logic loop.
     for (let i=0; i < starClassArr.length; i++) {
         if (starTemp >= starClassArr[i][1] && starTemp < starClassArr[i][0]) {
             //console.log(`It's a ${starClassArr[i][2]}-Class Star!`)
@@ -132,8 +133,8 @@ function classifyStar (starTemp) { //I got lazy so I made a logic loop.
     }
 }
 
-function calcBodyTempSolar(starTemp, starLuminosity, semiMajorAxis) {
-    return "hot"
+function calcBodyTempSolar(starTemp, starRadius, semiMajorAxis) {
+    return starTemp*Math.sqrt(starRadius/(2 * semiMajorAxis)) * Math.pow(.7, 1/4)
 }
 
 function calcBodyType(temperature, currentSize) {
@@ -141,11 +142,15 @@ function calcBodyType(temperature, currentSize) {
 }
 
 function calcAtmosphere(temperature, semiMajorAxis) {//temp and semiMajorAxis influence a chance to get an atmosphere.
-    return "hotter"
+    return false
 }
 
 function calcBodyTempAtmosphere(temperature, atmosphere) {
-    return "gassy"
+    if(atmosphere) {
+        return "gassy"
+    } else {
+        return temperature
+    }
 }
 
 function calcBodyMass(currentSize, currentType) {
@@ -175,14 +180,13 @@ function createRandomStars(starNum) { //only works for one star now
 function createRandomPlanets(planetNum, starObj) {//don't forget to input the star as an object
     let results = []
     let minDistance = .01 * AU
-    let maxDistance = 50000 * AU
+    let maxDistance = 50 * AU
     for(let i = 0;i < planetNum;i++) {
         let currentSemiMajorAxis = ranDumb(minDistance, maxDistance) // needs star input.
-        let currentSize = ranDumb(0.01, 999999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        let currentTemperature = calcBodyTempSolar(starObj.temperature, starObj.starLuminosity, currentSemiMajorAxis)
+        let currentSize = ranDumb(0.1, 999999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        let currentTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), currentSemiMajorAxis)
         let currentType = calcBodyType(currentTemperature, currentSemiMajorAxis)
         let currentAtmosphere = calcAtmosphere(currentTemperature, currentSemiMajorAxis)
-        currentTemperature = calcBodyTempAtmosphere(currentTemperature, currentAtmosphere)
         let currentMass = calcBodyMass(currentSize, currentType)
         let rotationPeriod = "wizard MATH"
         let orbitalPeriod = calcOrbitalPeriod(currentMass, starObj.starMass, currentSemiMajorAxis)
@@ -198,3 +202,6 @@ const star1 = new Star(createRandomStars(1))
 const planet1 = new Planet(createRandomPlanets(1, star1))
 console.log(star1)
 console.log(planet1)
+
+console.log(solarTemp*Math.sqrt(solarRadius/(2 * AU)) * Math.pow(.7, 1/4)) /////////////////OH MY THIS IS IT!!!!!!!!!!!!!
+console.log(calcBodyTempSolar(solarTemp, solarRadius, earthSemiMajorAxis))
