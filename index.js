@@ -9,12 +9,19 @@ const solarRadius = 695700
 const solarLuminosity = 3.828 * Math.pow(10, 26)
 const solarTemp = 5772
 const mercuryMass = 3.3011 * Math.pow(10, 23)
+const mercuryTemp = 340.15
 const earthMass = 5.9722 * Math.pow(10, 24)
-const earthSemiMajorAxis = 149597887 
+const earthSemiMajorAxis = 149597887
+const earthTemp = 288
 const lunarMass = 7.342 * Math.pow(10, 22)
 const lunarSemiMajorAxis = 384399
+const lunarTemp = 271
 const jupiterMass = 1.899 * Math.pow(10, 27)
 const jupiterSemiMajorAxis = 5.2038 * AU
+const jupiterTemp = 165
+const marsMass = 6.4171 * Math.pow(10, 23)
+const marsRadius = 3396.2
+const marsTemp = 333.15
 
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 const starClassArr = [ //Make into a Map/dictionary
@@ -118,11 +125,13 @@ function createRandomStars(starNum) {
     return results
 }
 
-function createRandomPlanets(planetNum) {
+function createRandomPlanets(planetNum, starObj) { 
     let results = []
+    let minDistance = starObj.starRadius * 10 / AU
+    let maxDistance = starObj.starRadius * 50000 / AU
     for(let i = 0;i < planetNum;i++) {
-        let currentMass = ranDumb(0, 10000)/100
-
+        let currentSemiMajorAxis = ranDumb(minDistance, maxDistance) // needs star input.
+        let currentSize = ranDumb(minSize, maxSize)
     }
 }
 
