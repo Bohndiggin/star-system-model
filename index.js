@@ -127,7 +127,6 @@ function calcHabitableZone(luminosity) {
 function classifyStar(starTemp) { //I got lazy so I made a logic loop.
     for (let i=0; i < starClassArr.length; i++) {
         if (starTemp >= starClassArr[i][1] && starTemp < starClassArr[i][0]) {
-            //console.log(`It's a ${starClassArr[i][2]}-Class Star!`)
             return `It's a ${starClassArr[i][2]}-Class Star!`
         }
     }
