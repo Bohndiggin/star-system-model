@@ -37,8 +37,7 @@ const starTypeArr = [ //Make into a Map/dictionary
 ]
 
 //Class name, max mass, min mass, max radius, min radius, % of occurance
-const planetClassArr = [
-    ["smol"]
+const bodyTypeArr = [
 ]
 
 class Star {
@@ -130,28 +129,38 @@ function classifyStar(starTemp) { //I got lazy so I made a logic loop.
     }
 }
 
-function calcBodyTempSolar(starTemp, starRadius, semiMajorAxis) {
-    return starTemp*Math.sqrt(starRadius/(2 * semiMajorAxis)) * Math.pow(.7, 1/4)
+function calcBodyTempSolar(starTemp, starRadius, bodySemiMajorAxis) { //MAGIC math. Determines approx. body temp based on the body's distance from it's star.
+    return starTemp*Math.sqrt(starRadius/(2 * bodySemiMajorAxis)) * Math.pow(.7, 1/4)
 }
 
-function calcBodyType(temperature, currentSize) { //conditional logic to determine what kind of planed it is.
+function calcBodyType(bodyTemperature, bodySize) { //conditional logic to determine what kind of planet it is.
+    let bodyType = ""
+    for(let i = 0;i<bodyTypeArr.length;i++) {
+        if(bodyTemperature >= bodyTypeArr[i][0]) {
+            bodyType = "junk"
+        }
+    }
     return "chunky"
 }
 
-function calcAtmosphere(temperature, semiMajorAxis) {//temp and semiMajorAxis influence a chance to get an atmosphere.
+function calcBodyAtmosphere(bodyTemperature, bodyType, bodySemiMajorAxis) {//temp and semiMajorAxis influence a chance to get an atmosphere.
     return false
 }
 
-function calcBodyTempAtmosphere(temperature, atmosphere) {
-        if(atmosphere) {
+function calcBodyTempAtmosphere(bodyTemperature, bodyAtmosphere) {
+    if(bodyAtmosphere) {
         return "gassy"
     } else {
-        return temperature
+        return bodyTemperature
     }
 }
 
-function calcBodyMass(currentSize, currentType) {
+function calcBodyMass(bodySize, bodyType) {
     return "heavy"
+}
+
+function calcBodyGravity(bodyMass, bodySize) {
+    return 9.8
 }
 
 function createRandomStars(starNum) { //only works for one star now
@@ -177,19 +186,20 @@ function createRandomStars(starNum) { //only works for one star now
 function createRandomPlanets(planetNum, starObj) {//don't forget to input the star as an object
     let results = []
     let minDistance = .01 * AU
-    let maxDistance = 5 * AU
+    let maxDistance = 40 * AU
     for(let i = 0;i < planetNum;i++) {
         let currentSemiMajorAxis = ranDumb(minDistance, maxDistance) // needs star input.
-        let currentSize = ranDumb(0.1, 999999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        let currentSize = ranDumb(0.1, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         let currentTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), currentSemiMajorAxis)
         let currentType = calcBodyType(currentTemperature, currentSemiMajorAxis)
-        let currentAtmosphere = calcAtmosphere(currentTemperature, currentSemiMajorAxis)
+        let currentAtmosphere = calcBodyAtmosphere(currentTemperature, currentType, currentSemiMajorAxis)
         let currentMass = calcBodyMass(currentSize, currentType)
         let rotationPeriod = "wizard MATH"
-        let orbitalPeriod = calcOrbitalPeriod(currentMass, starObj.starMass, currentSemiMajorAxis)
+        let orbitalPeriod = calcOrbitalPeriod(currentMass, (starObj.starMass * solarMass), currentSemiMajorAxis)
         let currentMoons = 0
         let currentRings = 0
-        results = [currentType, currentSemiMajorAxis, currentTemperature, currentSize, currentMoons, currentRings, currentAtmosphere, rotationPeriod, orbitalPeriod, currentMass]
+        let currentGravity = calcBodyGravity(currentMass, currentSize)
+        results = [currentType, currentSemiMajorAxis, currentTemperature, currentSize, currentMoons, currentRings, currentAtmosphere, rotationPeriod, orbitalPeriod, currentMass, currentGravity]
     }
     return results
 }
