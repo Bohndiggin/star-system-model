@@ -107,18 +107,20 @@ function update() {
     //runs everything. Moves planets. Oh wait. I only need to find the speed once. Then the updater only needs to be fed speeds once
 }
 
-function calcStarLuminosity(starTemp, starRadius) { //values must be relative to the sun.
-    let area = 4 * Math.PI * Math.pow(starRadius, 2)
-    let ans = sbConstant * area * Math.pow(starTemp, 4)
+function calcStarLuminosity(starTemp) { //values must be relative to the sun.
+    let ans = starTemp/solarTemp
     return ans
 }
 
-function calcHabitableZone(luminosity) {
-    let min = Math.sqrt((luminosity)/1.1)
-    let max = Math.sqrt((luminosity)/0.53)
+function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175K and 300K
+    let max = 0
+    console.log((Math.pow(starTemp/(254.58 * Math.pow(0.7, 1/4)), 2) * (starRadius/2))/AU) // NEEDS TO EQUAL 1 AU
+    let min = 0
     let minmax = [min, max]
     return minmax
 }
+
+console.log(calcHabitableZone(solarTemp, solarRadius))
 
 
 function classifyStar(starTemp) { //I got lazy so I made a logic loop.
@@ -132,6 +134,9 @@ function classifyStar(starTemp) { //I got lazy so I made a logic loop.
 function calcBodyTempSolar(starTemp, starRadius, bodySemiMajorAxis) { //MAGIC math. Determines approx. body temp based on the body's distance from it's star.
     return starTemp*Math.sqrt(starRadius/(2 * bodySemiMajorAxis)) * Math.pow(.7, 1/4)
 }
+console.log(calcBodyTempSolar(solarTemp, solarRadius, earthSemiMajorAxis))
+console.log(calcBodyTempSolar(solarTemp, solarRadius, AU))
+
 
 function calcBodyType(bodyTemperature, bodySize) { //conditional logic to determine what kind of planet it is.
     let bodyType = ""
@@ -171,12 +176,13 @@ function createRandomStars(starNum) { //only works for one star now
         if (currentClass <= starTypeArr[j][9]) { //using Math.random I generate the stats of the stars. This is because the relationship between temperature and Luminosity is too complex lol.
             let temperature = ranDumb(starTypeArr[j][1], starTypeArr[j][0])
             let starMass = ranDumb(starTypeArr[j][4], starTypeArr[j][3])
-            let starRadius = ranDumb(starTypeArr[j][6], starTypeArr[j][5])
-            let starLuminosity = ranDumb(starTypeArr[j][8], starTypeArr[j][7])
+            let starRadius = ranDumb(starTypeArr[j][6], starTypeArr[j][5]) // get radius correct.
+            let starLuminosity = calcStarLuminosity(temperature)
             let starClass = classifyStar(temperature)
-            let starHabitableZone = calcHabitableZone(starLuminosity)
+            let starHabitableZone = calcHabitableZone(temperature, starRadius * solarRadius)
             //results.push([temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone])
-            results = [temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone] //NOW how to create n objects??
+            //results = [temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone]
+            results.push(new Star([temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone]))
         }
        }
     }
@@ -185,32 +191,31 @@ function createRandomStars(starNum) { //only works for one star now
 
 function createRandomPlanets(planetNum, starObj) {//don't forget to input the star as an object
     let results = []
-    let minDistance = .01 * AU
-    let maxDistance = 40 * AU
+    let minDistance = (.01 * AU) * (starObj[0].temperature/solarTemp)
+    let maxDistance = (15 * AU) * (starObj[0].temperature/solarTemp)
     for(let i = 0;i < planetNum;i++) {
-        let currentSemiMajorAxis = ranDumb(minDistance, maxDistance) // needs star input.
+        let currentSemiMajorAxis = ranDumb(minDistance, maxDistance) // needs star input. """"""""Maybe you'll want to put some logic here for star size to reign in the numbers""""""""
         let currentSize = ranDumb(0.1, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        let currentTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), currentSemiMajorAxis)
+        let currentTemperature = calcBodyTempSolar(starObj[0].temperature, (starObj[0].starRadius * solarRadius), currentSemiMajorAxis)
         let currentType = calcBodyType(currentTemperature, currentSemiMajorAxis)
         let currentAtmosphere = calcBodyAtmosphere(currentTemperature, currentType, currentSemiMajorAxis)
         let currentMass = calcBodyMass(currentSize, currentType)
         let rotationPeriod = "wizard MATH"
-        let orbitalPeriod = calcOrbitalPeriod(currentMass, (starObj.starMass * solarMass), currentSemiMajorAxis)
+        let orbitalPeriod = calcOrbitalPeriod(currentMass, (starObj[0].starMass * solarMass), currentSemiMajorAxis)
         let currentMoons = 0
         let currentRings = 0
         let currentGravity = calcBodyGravity(currentMass, currentSize)
-        results = [currentType, currentSemiMajorAxis, currentTemperature, currentSize, currentMoons, currentRings, currentAtmosphere, rotationPeriod, orbitalPeriod, currentMass, currentGravity]
+        results.push(new Planet([currentType, currentSemiMajorAxis, currentTemperature, currentSize, currentMoons, currentRings, currentAtmosphere, rotationPeriod, orbitalPeriod, currentMass, currentGravity]))
     }
     return results
 }
 
 //testing math here.
-const star1 = new Star(createRandomStars(1))
-const planet1 = new Planet(createRandomPlanets(1, star1))
-console.log(star1)
-console.log(planet1)
 
-console.log(calcBodyTempSolar(solarTemp, solarRadius, marsSemiMajorAxis))
+// let star = createRandomStars(1)
+// let planets = createRandomPlanets(1, star)
 
-console.log(solarTemp*Math.sqrt(solarRadius/(2 * AU)) * Math.pow(.7, 1/4)) /////////////////OH MY THIS IS IT!!!!!!!!!!!!!
-console.log(calcBodyTempSolar(solarTemp, solarRadius, earthSemiMajorAxis))
+// console.log(star)
+// console.log(star[0].starHabitableZone[0]/AU)
+// console.log(planets[0].semiMajorAxis/AU)
+// console.log(planets[0].temperature)
