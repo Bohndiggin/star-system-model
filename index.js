@@ -40,31 +40,7 @@ const starTypeArr = [ //Make into a Map/dictionary
 const bodyTypeArr = [
 ]
 
-class Star {
-    constructor ([temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone]) {
-        this.temperature = temperature
-        this.starClass = starClass
-        this.starMass = starMass
-        this.starRadius = starRadius
-        this.starLuminosity = starLuminosity
-        this.starHabitableZone = starHabitableZone
-    }
-}
 
-class Planet {
-    constructor ([type, semiMajorAxis, temperature, radius, moons, rings, atmosphere, rotationPeriod, orbitalPeriod, mass]) {
-        this.type = type
-        this.semiMajorAxis = semiMajorAxis
-        this.temperature = temperature
-        this.radius = radius
-        this.moons = moons
-        this.rings = rings
-        this.atmosphere = atmosphere
-        this.rotationPeriod = rotationPeriod
-        this.orbitalPeriod = orbitalPeriod
-        this.mass = mass
-    }
-}
 
 function ranDumb(min, max) {
     return (Math.random() * (max - min)) + min
@@ -168,51 +144,47 @@ function calcBodyGravity(bodyMass, bodySize) {
     return 9.8
 }
 
-function createRandomStars(starNum) { //only works for one star now
-    let results = []
-    for (let i = 0;i < starNum;i++) {
-       let currentClass = ranDumb(1, 10000)/100
-       for(let j = 0;j < starTypeArr.length;j++) {
-        if (currentClass <= starTypeArr[j][9]) { //using Math.random I generate the stats of the stars. This is because the relationship between temperature and Luminosity is too complex lol.
-            let temperature = ranDumb(starTypeArr[j][1], starTypeArr[j][0])
-            let starMass = ranDumb(starTypeArr[j][4], starTypeArr[j][3])
-            let starRadius = ranDumb(starTypeArr[j][6], starTypeArr[j][5]) // get radius correct.
-            let starLuminosity = calcStarLuminosity(temperature)
-            let starClass = classifyStar(temperature)
-            let starHabitableZone = calcHabitableZone(temperature, starRadius * solarRadius)
-            //results.push([temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone])
-            //results = [temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone]
-            results.push(new Star([temperature, starClass, starMass, starRadius, starLuminosity, starHabitableZone]))
+class Star {
+    constructor () {
+        let currentClass = ranDumb(1, 10000)/100
+        for(let j = 0;j < starTypeArr.length;j++) {
+            if (currentClass <= starTypeArr[j][9]) { //using Math.random I generate the stats of the stars. This is because the relationship between temperature and Luminosity is too complex lol.
+                this.temperature = ranDumb(starTypeArr[j][1], starTypeArr[j][0])
+                this.starMass = ranDumb(starTypeArr[j][4], starTypeArr[j][3])
+                this.starRadius = ranDumb(starTypeArr[j][6], starTypeArr[j][5]) // get radius correct.
+            }
         }
-       }
+    this.starLuminosity = calcStarLuminosity(this.temperature)
+    this.starClass = classifyStar(this.temperature)
+    this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
     }
-    return results
 }
 
-function createRandomPlanets(planetNum, starObj) {//don't forget to input the star as an object
-    let results = []
-    let minDistance = (.01 * AU) * (starObj[0].temperature/solarTemp)
-    let maxDistance = (15 * AU) * (starObj[0].temperature/solarTemp)
-    for(let i = 0;i < planetNum;i++) {
-        let currentSemiMajorAxis = ranDumb(minDistance, maxDistance) // needs star input. """"""""Maybe you'll want to put some logic here for star size to reign in the numbers""""""""
-        let currentSize = ranDumb(0.1, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        let currentTemperature = calcBodyTempSolar(starObj[0].temperature, (starObj[0].starRadius * solarRadius), currentSemiMajorAxis)
-        let currentType = calcBodyType(currentTemperature, currentSemiMajorAxis)
-        let currentAtmosphere = calcBodyAtmosphere(currentTemperature, currentType, currentSemiMajorAxis)
-        let currentMass = calcBodyMass(currentSize, currentType)
-        let rotationPeriod = "wizard MATH"
-        let orbitalPeriod = calcOrbitalPeriod(currentMass, (starObj[0].starMass * solarMass), currentSemiMajorAxis)
-        let currentMoons = 0
-        let currentRings = 0
-        let currentGravity = calcBodyGravity(currentMass, currentSize)
-        results.push(new Planet([currentType, currentSemiMajorAxis, currentTemperature, currentSize, currentMoons, currentRings, currentAtmosphere, rotationPeriod, orbitalPeriod, currentMass, currentGravity]))
+class Planet {
+    constructor (starObj) {
+        let minDistance = (.01 * AU) * (starObj.temperature/solarTemp)
+        let maxDistance = (15 * AU) * (starObj.temperature/solarTemp)
+        this.currentSemiMajorAxis = ranDumb(minDistance, maxDistance) // needs star input. """"""""Maybe you'll want to put some logic here for star size to reign in the numbers""""""""
+        this.currentSize = ranDumb(0.1, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        this.currentTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.currentSemiMajorAxis)
+        this.currentType = calcBodyType(this.currentTemperature, this.currentSemiMajorAxis)
+        this.currentAtmosphere = calcBodyAtmosphere(this.currentTemperature, this.currentType, this.currentSemiMajorAxis)
+        this.currentMass = calcBodyMass(this.currentSize, this.currentType)
+        this.rotationPeriod = "wizard MATH"
+        this.orbitalPeriod = calcOrbitalPeriod(this.currentMass, (starObj.starMass * solarMass), this.currentSemiMajorAxis)
+        this.currentMoons = 0
+        this.currentRings = 0
+        this.currentGravity = calcBodyGravity(this.currentMass, this.currentSize)
     }
-    return results
 }
+
 
 //testing math here.
 
-// let star = createRandomStars(1)
+let star = new Star()
+console.log(star)
+let planet = new Planet(star)
+console.log(planet)
 // let planets = createRandomPlanets(1, star)
 
 // console.log(star)
