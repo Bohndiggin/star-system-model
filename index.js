@@ -3,6 +3,7 @@ const GUnits = "m^3kg^-1s^-2"
 const speedOfLight = 299792458
 const AU = 149597870
 const sbConstant = 5.670374419 * Math.pow(10, -8)
+const kBoilingPoint = 373.15
 
 const solarMass = 1.98847 * Math.pow(10, 30)
 const solarRadius = 695700
@@ -37,7 +38,34 @@ const starTypeArr = [ //Make into a Map/dictionary
 ]
 
 //Class name, max mass, min mass, max radius, min radius, % of occurance
-const bodyTypeArr = [
+const temperatureArrayRocky = [
+]
+
+const temperatureArrayIcy = [
+    {
+        minTemp: 00,
+        maxTemp: 50,
+        planetType: "cold"
+    },
+    {
+        minTemp: 50,
+        maxTemp: 100,
+        planetType: "chilly"
+    },
+    {
+        minTemp: 100,
+        maxTemp: 200,
+        planetType: "brisky"
+    },
+    {
+        minTemp: 200,
+        maxTemp: 250,
+        planetType: "somethin"
+    }
+]
+
+const temperatureArrayMetalic = [
+
 ]
 
 function ranDumb(min, max) {
@@ -123,17 +151,39 @@ function clacBodyComposition() {
     return ans
 }
 
-console.log(clacBodyComposition())
-
-
 function calcBodyTypeFirstPass(temperature, size, composition) { //conditional logic to determine what kind of planet it is.
     let type = ""
-    for(let i = 0;i<bodyTypeArr.length;i++) {
-        if(temperature >= bodyTypeArr[i][0]) {
-            type = "junk"
+    if(composition.ice > composition.rock && composition.ice > composition.metal) {
+        type += "icy "
+    } else if (composition.rock > composition.ice && composition.rock > composition.metal) {
+        type += "rocky "
+    } else if (composition.metal > composition.ice && composition.metal > composition.rock) {
+        type += "metalic "
+    } else {
+        type += "It's Complicated "
+    }
+    if(type === "icy ") {
+        for(let i = 0;i<temperatureArrayIcy.length;i++) {
+            if(temperature > temperatureArrayIcy[i].minTemp) {
+                type += temperatureArrayIcy[i].planetType
+            }
         }
     }
-    return "chunky"
+    if(type === "rocky ") {
+        for(let i = 0;i<temperatureArrayRocky.length;i++) {
+            if(temperature > temperatureArrayRocky[i].minTemp) {
+                type += temperatureArrayRocky[i].planetType
+            }
+        }
+    }
+    if(type === "metalic ") {
+        for(let i = 0;i<temperatureArrayMetalic.length;i++) {
+            if(temperature >= temperatureArrayMetalic[i].minTemp) {
+                type += temperatureArrayMetalic[i].planetType
+            }
+        }
+    }
+    return type
 }
 
 function calcBodyTypeSecondPass(temperature) {
@@ -152,8 +202,15 @@ function calcBodyTempAtmosphere(temperature, atmosphere) {
     }
 }
 
-function calcIceBlast(temperature) {
-    return "kaboom"
+function calcIceBlast(temperature, composition) {
+    if(temperature > kBoilingPoint) {
+        composition.ice = 0
+        let rockTemp = (composition.rock / (composition.rock + composition.metal)) * 100
+        let metalTemp = (composition.metal / (composition.metal + composition.rock)) * 100
+        composition.rock = rockTemp
+        composition.metal = metalTemp
+    }
+    return composition
 }
 
 function calcBodyMass(size, type) {
@@ -185,6 +242,7 @@ class Planet {
         let minDistance = (.01 * AU) * (starObj.temperature/solarTemp)
         let maxDistance = (15 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
+        this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
         this.bodySize = ranDumb(0.1, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         this.bodyTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.bodySemiMajorAxis)
         this.bodyComposition = clacBodyComposition()
@@ -192,7 +250,7 @@ class Planet {
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
         this.bodyType = calcBodyTypeSecondPass()
-        this.bodyComposition = calcIceBlast(this.bodyTemperature)
+        this.bodyComposition = calcIceBlast(this.bodyTemperature, this.bodyComposition)
         this.bodyMass = calcBodyMass(this.bodySize, this.bodyComposition)
         this.bodyRotationPeriod = "wizard MATH"
         this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (starObj.starMass * solarMass), this.bodySemiMajorAxis)
@@ -216,10 +274,10 @@ function createNBodies(bodyNum, starObj) {
 
 //testing math here.
 
-// let star = new Star()
-// console.log(star)
-// let planet = new Planet(star)
-// // console.log(planet)
+let star = new Star()
+console.log(star)
+let planet = new Planet(star)
+console.log(planet)
 // let planets = createNBodies(10, star)
 // console.log(createNBodies(20, star))
 // console.log(planets)
