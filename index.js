@@ -40,8 +40,6 @@ const starTypeArr = [ //Make into a Map/dictionary
 const bodyTypeArr = [
 ]
 
-
-
 function ranDumb(min, max) {
     return (Math.random() * (max - min)) + min
 }
@@ -96,7 +94,7 @@ function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175
     return minmax
 }
 
-console.log(calcHabitableZone(solarTemp, solarRadius))
+// console.log(calcHabitableZone(solarTemp, solarRadius))
 
 
 function classifyStar(starTemp) { //I got lazy so I made a logic loop.
@@ -110,37 +108,59 @@ function classifyStar(starTemp) { //I got lazy so I made a logic loop.
 function calcBodyTempSolar(starTemp, starRadius, bodySemiMajorAxis) { //MAGIC math. Determines approx. body temp based on the body's distance from it's star.
     return starTemp*Math.sqrt(starRadius/(2 * bodySemiMajorAxis)) * Math.pow(.7, 1/4)
 }
-console.log(calcBodyTempSolar(solarTemp, solarRadius, earthSemiMajorAxis))
-console.log(calcBodyTempSolar(solarTemp, solarRadius, AU))
+// console.log(calcBodyTempSolar(solarTemp, solarRadius, earthSemiMajorAxis))
+// console.log(calcBodyTempSolar(solarTemp, solarRadius, AU))
 
 
-function calcBodyType(bodyTemperature, bodySize) { //conditional logic to determine what kind of planet it is.
-    let bodyType = ""
+function clacBodyComposition() {
+    let ans = {}
+    let iceContent = ranDumb(1, 100)
+    let rockContent = ranDumb(1, 100)
+    let metalContent = ranDumb(1, 100)
+    ans.ice = (iceContent / (iceContent + rockContent + metalContent)) * 100
+    ans.rock = (rockContent / (iceContent + rockContent + metalContent)) * 100
+    ans.metal = (metalContent / (iceContent + rockContent + metalContent)) * 100
+    return ans
+}
+
+console.log(clacBodyComposition())
+
+
+function calcBodyTypeFirstPass(temperature, size, composition) { //conditional logic to determine what kind of planet it is.
+    let type = ""
     for(let i = 0;i<bodyTypeArr.length;i++) {
-        if(bodyTemperature >= bodyTypeArr[i][0]) {
-            bodyType = "junk"
+        if(temperature >= bodyTypeArr[i][0]) {
+            type = "junk"
         }
     }
     return "chunky"
 }
 
-function calcBodyAtmosphere(bodyTemperature, bodyType, bodySemiMajorAxis) {//temp and semiMajorAxis influence a chance to get an atmosphere.
+function calcBodyTypeSecondPass(temperature) {
+    return "somethin"
+}
+
+function calcBodyAtmosphere(temperature, type, semiMajorAxis) {//temp and semiMajorAxis influence a chance to get an atmosphere.
     return false
 }
 
-function calcBodyTempAtmosphere(bodyTemperature, bodyAtmosphere) {
-    if(bodyAtmosphere) {
+function calcBodyTempAtmosphere(temperature, atmosphere) {
+    if(atmosphere) {
         return "gassy"
     } else {
-        return bodyTemperature
+        return temperature
     }
 }
 
-function calcBodyMass(bodySize, bodyType) {
+function calcIceBlast(temperature) {
+    return "kaboom"
+}
+
+function calcBodyMass(size, type) {
     return "heavy"
 }
 
-function calcBodyGravity(bodyMass, bodySize) {
+function calcBodyGravity(mass, size) {
     return 9.8
 }
 
@@ -164,27 +184,45 @@ class Planet {
     constructor (starObj) {
         let minDistance = (.01 * AU) * (starObj.temperature/solarTemp)
         let maxDistance = (15 * AU) * (starObj.temperature/solarTemp)
-        this.currentSemiMajorAxis = ranDumb(minDistance, maxDistance) // needs star input. """"""""Maybe you'll want to put some logic here for star size to reign in the numbers""""""""
-        this.currentSize = ranDumb(0.1, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        this.currentTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.currentSemiMajorAxis)
-        this.currentType = calcBodyType(this.currentTemperature, this.currentSemiMajorAxis)
-        this.currentAtmosphere = calcBodyAtmosphere(this.currentTemperature, this.currentType, this.currentSemiMajorAxis)
-        this.currentMass = calcBodyMass(this.currentSize, this.currentType)
-        this.rotationPeriod = "wizard MATH"
-        this.orbitalPeriod = calcOrbitalPeriod(this.currentMass, (starObj.starMass * solarMass), this.currentSemiMajorAxis)
-        this.currentMoons = 0
-        this.currentRings = 0
-        this.currentGravity = calcBodyGravity(this.currentMass, this.currentSize)
+        this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
+        this.bodySize = ranDumb(0.1, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        this.bodyTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.bodySemiMajorAxis)
+        this.bodyComposition = clacBodyComposition()
+        this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodySize, this.bodyComposition)
+        this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
+        this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
+        this.bodyType = calcBodyTypeSecondPass()
+        this.bodyComposition = calcIceBlast(this.bodyTemperature)
+        this.bodyMass = calcBodyMass(this.bodySize, this.bodyComposition)
+        this.bodyRotationPeriod = "wizard MATH"
+        this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (starObj.starMass * solarMass), this.bodySemiMajorAxis)
+        this.bodyMoons = 0
+        this.bodyRings = 0
+        this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodySize)
     }
+    orbit() {
+        //display updating
+    }
+}
+
+function createNBodies(bodyNum, starObj) {
+    let bodies = []
+    for(let i = 0;i<bodyNum;i++) {
+        bodies.push(new Planet(starObj))
+    }
+    return bodies
 }
 
 
 //testing math here.
 
-let star = new Star()
-console.log(star)
-let planet = new Planet(star)
-console.log(planet)
+// let star = new Star()
+// console.log(star)
+// let planet = new Planet(star)
+// // console.log(planet)
+// let planets = createNBodies(10, star)
+// console.log(createNBodies(20, star))
+// console.log(planets)
 // let planets = createRandomPlanets(1, star)
 
 // console.log(star)
