@@ -4,6 +4,9 @@ const speedOfLight = 299792458
 const AU = 149597870
 const sbConstant = 5.670374419 * Math.pow(10, -8)
 const kBoilingPoint = 373.15
+const cubicMeterOfRockMass = 2515
+const cubicMeterOfIceMass = 919
+const cubicMeterOfMetalMass = 8908
 
 const solarMass = 1.98847 * Math.pow(10, 30)
 const solarRadius = 695700
@@ -12,7 +15,7 @@ const solarTemp = 5772
 const mercuryMass = 3.3011 * Math.pow(10, 23)
 const mercuryTemp = 340.15
 const earthMass = 5.9722 * Math.pow(10, 24)
-const earthRadius = 6.3781 * Math.pow(10, 6)
+const earthRadius = 6371// * Math.pow(10, 6)
 const earthSemiMajorAxis = 149597887
 const earthTemp = 288
 const lunarMass = 7.342 * Math.pow(10, 22)
@@ -107,6 +110,10 @@ function calcGravitationalForce(mass1, mass2, distance) { //Not sure if this is 
 
 function update() {
     //runs everything. Moves planets. Oh wait. I only need to find the speed once. Then the updater only needs to be fed speeds once
+}
+
+function calcStarRadius(mass) {
+    return Math.pow(mass, 0.8)
 }
 
 function calcStarLuminosity(starTemp) { //values must be relative to the sun.
@@ -213,12 +220,17 @@ function calcIceBlast(temperature, composition) {
     return composition
 }
 
-function calcBodyMass(size, type) {
-    return "heavy"
+function calcBodyMass(size, composition) {
+    let mass = 0
+    let volume = (4/3) * Math.PI * Math.pow(size, 3)
+    mass += volume * (composition.rock/100) * cubicMeterOfRockMass
+    mass += volume * (composition.ice/100) * cubicMeterOfIceMass
+    mass += volume * (composition.metal/100) * cubicMeterOfMetalMass
+    return mass
 }
 
 function calcBodyGravity(mass, size) {
-    return 9.8
+    return (mass/earthMass)/Math.pow((size/earthRadius), 2)
 }
 
 class Star {
@@ -228,12 +240,13 @@ class Star {
             if (currentClass <= starTypeArr[j][9]) { //using Math.random I generate the stats of the stars. This is because the relationship between temperature and Luminosity is too complex lol.
                 this.temperature = ranDumb(starTypeArr[j][1], starTypeArr[j][0])
                 this.starMass = ranDumb(starTypeArr[j][4], starTypeArr[j][3])
-                this.starRadius = ranDumb(starTypeArr[j][6], starTypeArr[j][5]) // get radius correct.
+                //this.starRadius = ranDumb(starTypeArr[j][6], starTypeArr[j][5]) // get radius correct.
             }
         }
-    this.starLuminosity = calcStarLuminosity(this.temperature)
-    this.starClass = classifyStar(this.temperature)
-    this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
+        this.starRadius = calcStarRadius(this.starMass)
+        this.starLuminosity = calcStarLuminosity(this.temperature)
+        this.starClass = classifyStar(this.temperature)
+        this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
     }
 }
 
@@ -243,20 +256,21 @@ class Planet {
         let maxDistance = (15 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
-        this.bodySize = ranDumb(0.1, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        this.bodyRadius = ranDumb(600, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         this.bodyTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.bodySemiMajorAxis)
         this.bodyComposition = clacBodyComposition()
-        this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodySize, this.bodyComposition)
+        this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
         this.bodyType = calcBodyTypeSecondPass()
         this.bodyComposition = calcIceBlast(this.bodyTemperature, this.bodyComposition)
-        this.bodyMass = calcBodyMass(this.bodySize, this.bodyComposition)
+        this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
+        this.bodyEarthMasses = this.bodyMass / earthMass
         this.bodyRotationPeriod = "wizard MATH"
         this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (starObj.starMass * solarMass), this.bodySemiMajorAxis)
         this.bodyMoons = 0
         this.bodyRings = 0
-        this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodySize)
+        this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
     }
     orbit() {
         //display updating
