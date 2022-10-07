@@ -30,14 +30,29 @@ const marsRadius = 3396.2
 const marsTemp = 213.15
 
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
-const starTypeArr = [ //Make into a Map/dictionary
-    [1000000, 30000, "O", 20, 16, 8, 6.6, 50000, 30000, 0.03],
-    [30000, 10000, "B", 16, 2.1, 6.6, 1.8, 30000, 25, 0.22],
-    [10000, 7500, "A", 2.1, 1.4, 1.8, 1.4, 25, 5, 0.6],
-    [7500, 6000, "F", 1.4, 1.04, 1.4, 1.15, 5, 1.5, 3],
-    [6000, 5200, "G", 1.04, 0.8, 1.15, 0.96, 1.5, 0.6, 7.6],
-    [5200, 3700, "K", 0.8, 0.45, 0.96, 0.7, 0.6, 0.08, 12.1],
-    [3700, 2400, "M", 0.45, 0.08, 0.07, 0.00001, 0.08, 0.00001, 100]
+class StarTypes{
+    constructor(minTemp, maxTemp, className, minMass, maxMass, minRadius, maxRadius, minLumens, maxLumens, frequency) {
+        this.minTemp = minTemp,
+        this.maxTemp = maxTemp,
+        this.className = className,
+        this.minMass = minMass,
+        this.maxMass = maxMass,
+        this.minRadius = minRadius,
+        this.maxRadius = maxRadius,
+        this.minLumens = minLumens,
+        this.maxLumens = maxLumens,
+        this.frequency = frequency
+    }
+}
+//max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
+const starTypeArr = [
+    new StarTypes(30000, 1000000, 'O', 16, 20, 6.6, 8, 30000, 50000, 0.03),
+    new StarTypes(10000, 30000, 'B', 2.1, 16, 1.8, 30000, 25, 0.22),
+    new StarTypes(7500, 10000, 'A', 1.4, 2.1, 1.4, 1.8, 5, 25, 0.6),
+    new StarTypes(6000, 7500, 'F', 1.04, 1.4, 1.15, 1.4, 1.5, 5, 3),
+    new StarTypes(5200, 6000, 'G', 0.8, 1.04, 0.96, 1.15, 0.6, 1.5, 7.6),
+    new StarTypes(3700, 5200, 'K', 0.45, 0.8, 0.7, 0.96, 0.08, 0.6, 12.1),
+    new StarTypes(2400, 3700, 'M', 0.08, 0.45, 0.00001, 0.07, 0.00001, 0.08, 100)
 ]
 
 //Class name, max mass, min mass, max radius, min radius, % of occurance
@@ -83,7 +98,7 @@ const temperatureArrayMetalic = [
     new PlanetTypes(1200, Infinity, 'tartarus')
 ]
 
-function ranDumb(min, max) {
+function ranDumb(min, max) { //makes random numbers in the range specified
     return (Math.random() * (max - min)) + min
 }
 
@@ -108,7 +123,7 @@ function calcOrbitalSpeedKmps(mass1, mass2, semiMajorAxis) { // in case you want
     return ans
 }
 
-function calcOrbitalPeriod(mass1, mass2, semiMajorAxis) { //check against other planets.
+function calcOrbitalPeriod(mass1, mass2, semiMajorAxis) { //returns how many earth days it takes to go around the star
     let orbitalSpeed = calcOrbitalSpeed(mass1, mass2, semiMajorAxis)
     let orbitLength = 2 * Math.PI * semiMajorAxis
     let ans = orbitLength / orbitalSpeed
@@ -124,16 +139,16 @@ function update() {
     //runs everything. Moves planets. Oh wait. I only need to find the speed once. Then the updater only needs to be fed speeds once
 }
 
-function calcStarRadius(mass) {
+function calcStarRadius(mass) { //I looked up how much mass effects radius. Here you go.
     return Math.pow(mass, 0.8)
 }
 
-function calcStarLuminosity(starTemp) { //values must be relative to the sun.
+function calcStarLuminosity(starTemp) { //values must be relative to the sun. YOU Might be able to calculate this FR
     let ans = starTemp/solarTemp
     return ans
 }
 
-function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175K and 300K
+function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175K and 300K WIP HELP HELP HELP
     let max = 0
     console.log((Math.pow(starTemp/(254.58 * Math.pow(0.7, 1/4)), 2) * (starRadius/2))/AU) // NEEDS TO EQUAL 1 AU
     let min = 0
@@ -144,10 +159,10 @@ function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175
 // console.log(calcHabitableZone(solarTemp, solarRadius))
 
 
-function classifyStar(starTemp) { //I got lazy so I made a logic loop.
+function classifyStar(starTemp) { //I got lazy so I made a logic loop. this will name the star according to its class
     for (let i=0; i < starTypeArr.length; i++) {
-        if (starTemp >= starTypeArr[i][1] && starTemp < starTypeArr[i][0]) {
-            return `It's a ${starTypeArr[i][2]}-Class Star!`
+        if (starTemp >= starTypeArr[i].minTemp && starTemp < starTypeArr[i].maxTemp) {
+            return `It's a ${starTypeArr[i].className}-Class Star!`
         }
     }
 }
@@ -159,7 +174,7 @@ function calcBodyTempSolar(starTemp, starRadius, bodySemiMajorAxis) { //MAGIC ma
 // console.log(calcBodyTempSolar(solarTemp, solarRadius, AU))
 
 
-function clacBodyComposition() {
+function clacBodyComposition() { //randomly choose what the planet is made of.
     let ans = {}
     let iceContent = ranDumb(1, 100)
     let rockContent = ranDumb(1, 100)
@@ -182,7 +197,7 @@ function calcBodyTypeFirstPass(temperature, size, composition) { //conditional l
         type += "It's Complicated "
     }
     if(type === "icy ") {
-        for(let i = 0;i<temperatureArrayIcy.length;i++) {
+        for(let i = 0;i<temperatureArrayIcy.length;i++) { //using some objects I will add stats to the planet. (mostly for the name of the planet.) WORK IN PROGRESS
             if(temperature > temperatureArrayIcy[i].minTemp && temperature < temperatureArrayIcy[i].maxTemp) {
                 type += temperatureArrayIcy[i].planetType
             }
@@ -205,7 +220,7 @@ function calcBodyTypeFirstPass(temperature, size, composition) { //conditional l
     return type
 }
 
-function calcBodyTypeSecondPass(temperature) {
+function calcBodyTypeSecondPass(temperature) { //temp will change when given an atmosphere, this will calculate it.
     return "somethin else"
 }
 
@@ -213,7 +228,7 @@ function calcBodyAtmosphere(temperature, type, semiMajorAxis) {//temp and semiMa
     return false
 }
 
-function calcBodyTempAtmosphere(temperature, atmosphere) {
+function calcBodyTempAtmosphere(temperature, atmosphere) { //in work. Help.
     if(atmosphere) {
         return "gassy"
     } else {
@@ -221,7 +236,7 @@ function calcBodyTempAtmosphere(temperature, atmosphere) {
     }
 }
 
-function calcIceBlast(temperature, composition) {
+function calcIceBlast(temperature, composition) { //if the body temperature is above boiling, we'll blast away any water on the planet.
     if(temperature > kBoilingPoint) {
         composition.ice = 0
         let rockTemp = (composition.rock / (composition.rock + composition.metal)) * 100
@@ -232,27 +247,28 @@ function calcIceBlast(temperature, composition) {
     return composition
 }
 
-function calcBodyMass(size, composition) {
+function calcBodyMass(size, composition) { // using the mass of ice, rock, and uh nickel to find the stelar body's mass
     let mass = 0
     let volume = (4/3) * Math.PI * Math.pow(size, 3)
-    mass += volume * (composition.rock/100) * cubicMeterOfRockMass
-    mass += volume * (composition.ice/100) * cubicMeterOfIceMass
-    mass += volume * (composition.metal/100) * cubicMeterOfMetalMass
+    mass += volume * (composition.rock/100) * cubicMeterOfRockMass * 1000**3
+    mass += volume * (composition.ice/100) * cubicMeterOfIceMass * 1000**3
+    mass += volume * (composition.metal/100) * cubicMeterOfMetalMass * 1000**3
     return mass
 }
 
-function calcBodyGravity(mass, size) {
+function calcBodyGravity(mass, size) { //helps find relative gravity to earth
     return (mass/earthMass)/Math.pow((size/earthRadius), 2)
 }
 
 class Star {
     constructor () {
         let currentClass = ranDumb(1, 10000)/100
+        let found = false
         for(let j = 0;j < starTypeArr.length;j++) {
-            if (currentClass <= starTypeArr[j][9]) { //using Math.random I generate the stats of the stars. This is because the relationship between temperature and Luminosity is too complex lol.
-                this.temperature = ranDumb(starTypeArr[j][1], starTypeArr[j][0])
-                this.starMass = ranDumb(starTypeArr[j][4], starTypeArr[j][3])
-                //this.starRadius = ranDumb(starTypeArr[j][6], starTypeArr[j][5]) // get radius correct.
+            if (currentClass <= starTypeArr[j].frequency && !found) { //using Math.random I generate the stats of the stars.
+                this.temperature = ranDumb(starTypeArr[j].minTemp, starTypeArr[j].maxTemp)
+                this.starMass = ranDumb(starTypeArr[j].minMass, starTypeArr[j].maxMass)
+                found = true
             }
         }
         this.starRadius = calcStarRadius(this.starMass)
@@ -268,7 +284,7 @@ class Planet {
         let maxDistance = (15 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
-        this.bodyRadius = ranDumb(600, 99999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        this.bodyRadius = ranDumb(600, 9999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         this.bodyTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.bodySemiMajorAxis)
         this.bodyComposition = clacBodyComposition()
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
