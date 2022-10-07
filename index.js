@@ -41,34 +41,46 @@ const starTypeArr = [ //Make into a Map/dictionary
 ]
 
 //Class name, max mass, min mass, max radius, min radius, % of occurance
+class PlanetTypes {
+    constructor(minTemperature, maxTemperature, planetTypeName) {
+        this.minTemp = minTemperature
+        this.maxTemp = maxTemperature
+        this.planetType = planetTypeName
+    }
+}
+
 const temperatureArrayRocky = [
+    new PlanetTypes(00, 50, 'cold'),
+    new PlanetTypes(50, 100, 'chilly'),
+    new PlanetTypes(100, 200, 'brisky'),
+    new PlanetTypes(200, 275, 'frozen'),
+    new PlanetTypes(275, 300, 'earth-like'),
+    new PlanetTypes(300, kBoilingPoint, 'desert-world'),
+    new PlanetTypes(kBoilingPoint, 450, 'boiling'),
+    new PlanetTypes(450, 600, 'lava-world'),
+    new PlanetTypes(600, Infinity, 'hell-world')
 ]
 
 const temperatureArrayIcy = [
-    {
-        minTemp: 00,
-        maxTemp: 50,
-        planetType: "cold"
-    },
-    {
-        minTemp: 50,
-        maxTemp: 100,
-        planetType: "chilly"
-    },
-    {
-        minTemp: 100,
-        maxTemp: 200,
-        planetType: "brisky"
-    },
-    {
-        minTemp: 200,
-        maxTemp: 250,
-        planetType: "somethin"
-    }
+    new PlanetTypes(00, 50, 'cold'),
+    new PlanetTypes(50, 100, 'chilly'),
+    new PlanetTypes(100, 200, 'brisky'),
+    new PlanetTypes(200, 275, 'frozen'),
+    new PlanetTypes(275, 300, 'ocean'),
+    new PlanetTypes(300, kBoilingPoint, 'Hot Ocean')
 ]
 
 const temperatureArrayMetalic = [
-
+    new PlanetTypes(00, 50, 'cold'),
+    new PlanetTypes(50, 100, 'chilly'),
+    new PlanetTypes(100, 200, 'brisky'),
+    new PlanetTypes(200, 275, 'frozen'),
+    new PlanetTypes(275, 300, 'rust-world'),
+    new PlanetTypes(300, kBoilingPoint, 'pot-world'),
+    new PlanetTypes(kBoilingPoint, 450, 'boiling'),
+    new PlanetTypes(450, 600, 'stovetop'),
+    new PlanetTypes(600, 1200, 'oven-world'),
+    new PlanetTypes(1200, Infinity, 'tartarus')
 ]
 
 function ranDumb(min, max) {
@@ -171,21 +183,21 @@ function calcBodyTypeFirstPass(temperature, size, composition) { //conditional l
     }
     if(type === "icy ") {
         for(let i = 0;i<temperatureArrayIcy.length;i++) {
-            if(temperature > temperatureArrayIcy[i].minTemp) {
+            if(temperature > temperatureArrayIcy[i].minTemp && temperature < temperatureArrayIcy[i].maxTemp) {
                 type += temperatureArrayIcy[i].planetType
             }
         }
     }
     if(type === "rocky ") {
         for(let i = 0;i<temperatureArrayRocky.length;i++) {
-            if(temperature > temperatureArrayRocky[i].minTemp) {
+            if(temperature > temperatureArrayRocky[i].minTemp && temperature < temperatureArrayRocky[i].maxTemp) {
                 type += temperatureArrayRocky[i].planetType
             }
         }
     }
     if(type === "metalic ") {
         for(let i = 0;i<temperatureArrayMetalic.length;i++) {
-            if(temperature >= temperatureArrayMetalic[i].minTemp) {
+            if(temperature >= temperatureArrayMetalic[i].minTemp && temperature < temperatureArrayMetalic[i].maxTemp) {
                 type += temperatureArrayMetalic[i].planetType
             }
         }
@@ -194,7 +206,7 @@ function calcBodyTypeFirstPass(temperature, size, composition) { //conditional l
 }
 
 function calcBodyTypeSecondPass(temperature) {
-    return "somethin"
+    return "somethin else"
 }
 
 function calcBodyAtmosphere(temperature, type, semiMajorAxis) {//temp and semiMajorAxis influence a chance to get an atmosphere.
@@ -262,7 +274,7 @@ class Planet {
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
-        this.bodyType = calcBodyTypeSecondPass()
+        //this.bodyType = calcBodyTypeSecondPass()
         this.bodyComposition = calcIceBlast(this.bodyTemperature, this.bodyComposition)
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
