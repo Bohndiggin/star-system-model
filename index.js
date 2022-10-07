@@ -148,10 +148,15 @@ function calcStarLuminosity(starTemp) { //values must be relative to the sun. YO
     return ans
 }
 
+// function calcP(mass1, mass2, specificAngularMomentum) { //CANCER MATH. May need later
+//     return Math.pow(specificAngularMomentum, 2) / makeSGP(mass1, mass2)
+// }
+
+// console.log(calcP(solarMass, earthMass, 29.78))
+
 function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175K and 300K WIP HELP HELP HELP
-    let max = 0
-    console.log((Math.pow(starTemp/(254.58 * Math.pow(0.7, 1/4)), 2) * (starRadius/2))/AU) // NEEDS TO EQUAL 1 AU
-    let min = 0
+    let max =  1 / (Math.pow(175 / starTemp / Math.pow(0.7, 1 / 4), 2) * 2 / starRadius)
+    let min =  1 / (Math.pow(300 / starTemp / Math.pow(0.7, 1 / 4), 2) * 2 / starRadius)
     let minmax = [min, max]
     return minmax
 }
@@ -299,6 +304,8 @@ class Planet {
         this.bodyMoons = 0
         this.bodyRings = 0
         this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
+        this.bodyXPosition = 0
+        this.bodyYPosition = 0
     }
     orbit() {
         //display updating
