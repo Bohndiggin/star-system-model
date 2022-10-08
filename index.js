@@ -268,12 +268,11 @@ function calcBodyGravity(mass, size) { //helps find relative gravity to earth
 class Star {
     constructor () {
         let currentClass = ranDumb(1, 10000)/100
-        let found = false
         for(let j = 0;j < starTypeArr.length;j++) {
-            if (currentClass <= starTypeArr[j].frequency && !found) { //using Math.random I generate the stats of the stars.
+            if (currentClass <= starTypeArr[j].frequency) { //using Math.random I generate the stats of the stars.
                 this.temperature = ranDumb(starTypeArr[j].minTemp, starTypeArr[j].maxTemp)
                 this.starMass = ranDumb(starTypeArr[j].minMass, starTypeArr[j].maxMass)
-                found = true
+                break
             }
         }
         this.starRadius = calcStarRadius(this.starMass)
