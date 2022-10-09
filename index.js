@@ -154,7 +154,7 @@ function calcStarLuminosity(starTemp) { //values must be relative to the sun. YO
 
 // console.log(calcP(solarMass, earthMass, 29.78))
 
-function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175K and 300K WIP HELP HELP HELP
+function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175K and 300K FIXED!!
     let max =  1 / (Math.pow(175 / starTemp / Math.pow(0.7, 1 / 4), 2) * 2 / starRadius)
     let min =  1 / (Math.pow(300 / starTemp / Math.pow(0.7, 1 / 4), 2) * 2 / starRadius)
     let minmax = [min, max]
@@ -241,15 +241,16 @@ function calcBodyTempAtmosphere(temperature, atmosphere) { //in work. Help.
     }
 }
 
-function calcIceBlast(temperature, composition) { //if the body temperature is above boiling, we'll blast away any water on the planet.
-    if(temperature > kBoilingPoint) {
-        composition.ice = 0
-        let rockTemp = (composition.rock / (composition.rock + composition.metal)) * 100
-        let metalTemp = (composition.metal / (composition.metal + composition.rock)) * 100
-        composition.rock = rockTemp
-        composition.metal = metalTemp
+function calcIceBlast(obj) { //if the body temperature is above boiling, we'll blast away any water on the planet.
+    if(obj.temperature > kBoilingPoint) {
+        obj.bodyRadius -= obj.bodyRadius * (obj.composition.ice/100)
+        obj.composition.ice = 0
+        let rockTemporary = (obj.composition.rock / (obj.composition.rock + obj.composition.metal)) * 100
+        let metalTemporary = (obj.composition.metal / (obj.composition.metal + obj.composition.rock)) * 100
+        obj.composition.rock = rockTemporary
+        obj.composition.metal = metalTemporary
     }
-    return composition
+    return obj.bodyComposition
 }
 
 function calcBodyMass(size, composition) { // using the mass of ice, rock, and uh nickel to find the stelar body's mass
@@ -295,7 +296,7 @@ class Planet {
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
         //this.bodyType = calcBodyTypeSecondPass()
-        this.bodyComposition = calcIceBlast(this.bodyTemperature, this.bodyComposition)
+        this.bodyComposition = calcIceBlast(this)
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
         this.bodyRotationPeriod = "wizard MATH"
@@ -305,6 +306,7 @@ class Planet {
         this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
         this.bodyXPosition = 0
         this.bodyYPosition = 0
+        this.bodyZPosition = 0
     }
     orbit() {
         //display updating
