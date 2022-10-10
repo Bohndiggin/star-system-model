@@ -29,6 +29,8 @@ const marsSemiMajorAxis = 1.524 * AU
 const marsRadius = 3396.2
 const marsTemp = 213.15
 
+let planetNumber = 0
+
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 class StarTypes{
     constructor(minTemp, maxTemp, className, minMass, maxMass, minRadius, maxRadius, minLumens, maxLumens, frequency) {
@@ -101,6 +103,16 @@ const temperatureArrayMetalic = [
 function ranDumb(min, max) { //makes random numbers in the range specified
     return (Math.random() * (max - min)) + min
 }
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }  
+
 
 function makeSGP(mass1, mass2) { //sgp = standard gravitational parameter
     let sgp = G * (mass1 + mass2)
@@ -266,6 +278,25 @@ function calcBodyGravity(mass, size) { //helps find relative gravity to earth
     return (mass/earthMass)/Math.pow((size/earthRadius), 2)
 }
 
+function movePlanet(xOffset, yOffset, planetName, radius, orbitalSpeed) {
+    let timer = null
+    let planet1 = document.getElementById(planetName)
+    clearInterval(timer)
+    let xPosition = 0
+    let yPosition = 0
+    timer = setInterval(frame, 5);
+    function frame() {
+        if(xPosition === 1) {
+            clearInterval(timer)
+        } else {
+            xPosition += orbitalSpeed / 100
+            yPosition += orbitalSpeed / 100
+            planet1.style.left = Math.cos(xPosition) * radius + xOffset + 'px'
+            planet1.style.top = Math.sin(yPosition) * radius + yOffset + 'px'
+        }
+    }
+}
+
 class Star {
     constructor () {
         let currentClass = ranDumb(1, 10000)/100
@@ -307,11 +338,37 @@ class Planet {
         this.bodyXPosition = 0
         this.bodyYPosition = 0
         this.bodyZPosition = 0
+        let animationSection = document.getElementById('container')
+        let planetX = document.createElement("div")
+        let planetName = `planet${planetNumber}`
+        planetX.setAttribute('id', planetName)
+        animationSection.appendChild(planetX)
+        let childrenplanets = animationSection.children
+        childrenplanets[planetNumber].style.background = getRandomColor()
+        let x = (this.bodySemiMajorAxisAU * (500/15))
+        let offset = 500
+        let orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
+        movePlanet(offset, offset, planetName, x, orbitalSpeed)
+        planetNumber++
     }
     orbit() {
         //display updating
     }
 }
+
+
+let star = new Star()
+console.log(star)
+let planet = new Planet(star)
+console.log(planet)
+
+// movePlanet(500, 500, "planet1", 500, 0.01)
+
+function addPlanet() {
+    createNBodies(1, star)
+}
+
+
 
 function createNBodies(bodyNum, starObj) {
     let bodies = []
@@ -324,10 +381,7 @@ function createNBodies(bodyNum, starObj) {
 
 //testing math here.
 
-let star = new Star()
-console.log(star)
-let planet = new Planet(star)
-console.log(planet)
+
 // let planets = createNBodies(10, star)
 // console.log(createNBodies(20, star))
 // console.log(planets)
@@ -339,24 +393,3 @@ console.log(planet)
 // console.log(planets[0].temperature)
 
 
-
-function movePlanet(xOffset, yOffset, planetName) {
-    let timer = null;
-    let planet1 = document.getElementById(planetName)
-    clearInterval(timer);
-    let xPosition = 0
-    let yPosition = 0
-    timer = setInterval(frame, 5);
-    function frame() {
-        if(xPosition === 1) {
-            clearInterval(timer)
-        } else {
-            xPosition += 0.01
-            yPosition += 0.01
-            planet1.style.left = Math.cos(xPosition) * 100 + xOffset + 'px'
-            planet1.style.top = Math.sin(yPosition) * 100 + yOffset + 'px'
-        }
-    }
-}
-
-movePlanet(100, 100, "planet1")
