@@ -345,7 +345,7 @@ class Planet {
         animationSection.appendChild(planetX)
         let childrenplanets = animationSection.children
         childrenplanets[planetNumber].style.background = getRandomColor()
-        let x = (this.bodySemiMajorAxisAU * (500/15))
+        let x = (this.bodySemiMajorAxisAU * (500/14))
         let offset = 500
         let orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
         movePlanet(offset, offset, planetName, x, orbitalSpeed)
