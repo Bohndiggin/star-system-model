@@ -1,0 +1,18 @@
+#container {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    background: black;
+}
+#planet1{
+    position: absolute;
+    size: 1rem;
+    width: 50px;
+    height: 50px;
+    left: 50px;
+    top: 50px;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 50px;
+    background-color: blue;
+}

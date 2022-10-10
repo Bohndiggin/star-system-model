@@ -337,3 +337,26 @@ console.log(planet)
 // console.log(star[0].starHabitableZone[0]/AU)
 // console.log(planets[0].semiMajorAxis/AU)
 // console.log(planets[0].temperature)
+
+
+
+function movePlanet(xOffset, yOffset, planetName) {
+    let timer = null;
+    let planet1 = document.getElementById(planetName)
+    clearInterval(timer);
+    let xPosition = 0
+    let yPosition = 0
+    timer = setInterval(frame, 5);
+    function frame() {
+        if(xPosition === 1) {
+            clearInterval(timer)
+        } else {
+            xPosition += 0.01
+            yPosition += 0.01
+            planet1.style.left = Math.cos(xPosition) * 100 + xOffset + 'px'
+            planet1.style.top = Math.sin(yPosition) * 100 + yOffset + 'px'
+        }
+    }
+}
+
+movePlanet(100, 100, "planet1")
