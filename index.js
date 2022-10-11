@@ -30,6 +30,7 @@ const marsRadius = 3396.2
 const marsTemp = 213.15
 
 let planetNumber = 0
+let jsBodies = []
 
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 class StarTypes{
@@ -297,6 +298,27 @@ function movePlanet(xOffset, yOffset, planetName, radius, orbitalSpeed) {
     }
 }
 
+function allStop() {
+}
+
+function listPlanets() {
+    let htmlPlanets = document.getElementById('container').children
+    console.log(htmlPlanets)
+    console.log()
+}
+
+function clickPresent(obj) {
+    let bodyCaught = null
+    for (let i = 0; i < jsBodies.length; i++) {
+        if (jsBodies[i].bodyName === obj.id) {
+            console.log(`found ${jsBodies[i].bodyName}`)
+            bodyCaught = jsBodies[i]
+            break            
+        }       
+    }
+    bodyCaught.presentInfo()
+}
+
 class Star {
     constructor () {
         let currentClass = ranDumb(1, 10000)/100
@@ -340,27 +362,48 @@ class Planet {
         this.bodyZPosition = 0
         let animationSection = document.getElementById('container')
         let planetX = document.createElement("div")
-        let planetName = `planet${planetNumber}`
-        planetX.setAttribute('id', planetName)
+        this.bodyName = `planet${planetNumber}`
+        planetX.setAttribute('id', this.bodyName)
         animationSection.appendChild(planetX)
         let childrenplanets = animationSection.children
         childrenplanets[planetNumber].style.background = getRandomColor()
         let x = (this.bodySemiMajorAxisAU * (500/14))
         let offset = 500
         let orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
-        movePlanet(offset, offset, planetName, x, orbitalSpeed)
+        movePlanet(offset, offset, this.bodyName, x, orbitalSpeed)
+        document.getElementById(this.bodyName).onclick = function () {clickPresent(this)}
         planetNumber++
     }
-    orbit() {
-        //display updating
+    presentInfo () {
+        let stats = [
+            `Planet Info`,
+            `Name: ${this.bodyName}`,
+            `Type: ${this.bodyType}`,
+            `Physical Info:`,
+            `Composition: ${this.bodyComposition}`,
+            `Temperature: ${this.bodyTemperature}`,
+            `Size (Relative to Earth): ${this.bodyRadius/earthRadius}`,
+            `Mass (kg): ${this.bodyMass}`,
+            `Earth Masses: ${this.bodyMass/earthMass}`,
+            `Gravity: ${this.bodyGravity}`,
+            `Orbital Info:`,
+            `SemiMajorAxis: ${this.bodySemiMajorAxis}`,
+            `SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}`,
+            `Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}`
+        ]
+        let panel = document.getElementById('planetStatDisplay').children
+        for (let i = 0; i < panel.length; i++) {
+            panel[i].innerHTML = stats[i]
+        }
+
     }
 }
 
 
 let star = new Star()
 console.log(star)
-let planet = new Planet(star)
-console.log(planet)
+// let planet = new Planet(star)
+// console.log(planet)
 
 // movePlanet(500, 500, "planet1", 500, 0.01)
 
@@ -371,11 +414,12 @@ function addPlanet() {
 
 
 function createNBodies(bodyNum, starObj) {
-    let bodies = []
+    let newBodies = []
     for(let i = 0;i<bodyNum;i++) {
-        bodies.push(new Planet(starObj))
+        newBodies.push(new Planet(starObj))
+        jsBodies.push(newBodies[i])
     }
-    return bodies
+    return newBodies
 }
 
 
