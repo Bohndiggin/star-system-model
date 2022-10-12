@@ -31,6 +31,12 @@ const marsTemp = 213.15
 
 let planetNumber = 0
 let jsBodies = []
+let displayElement = document.querySelector('display')
+let planetBoxEle = document.getElementById('planetBox')
+let childrenplanets = planetBoxEle.children
+let planetGenButton = document.getElementById('addPlanet')
+let listButton = document.getElementById('listPlanets')
+let bonkBtn = document.getElementById('bonk')
 
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 class StarTypes{
@@ -279,7 +285,7 @@ function calcBodyGravity(mass, size) { //helps find relative gravity to earth
     return (mass/earthMass)/Math.pow((size/earthRadius), 2)
 }
 
-function movePlanet(xOffset, yOffset, planetName, radius, orbitalSpeed) {
+function setOrbit(xOffset, yOffset, planetName, radius, orbitalSpeed) {
     let timer = null
     let planet1 = document.getElementById(planetName)
     clearInterval(timer)
@@ -302,10 +308,12 @@ function allStop() {
 }
 
 function listPlanets() {
-    let htmlPlanets = document.getElementById('planetBox').children
+    let htmlPlanets = planetBoxEle.children
     console.log(htmlPlanets)
     console.log()
 }
+
+listButton.addEventListener('click', listPlanets)
 
 function clickPresent(obj) {
     let bodyCaught = null
@@ -314,10 +322,17 @@ function clickPresent(obj) {
             console.log(`found ${jsBodies[i].bodyName}`)
             bodyCaught = jsBodies[i]
             break            
-        }       
+        } 
     }
     bodyCaught.presentInfo()
 }
+
+function bonk() {
+    let randomPlanet = jsBodies[Math.floor(ranDumb(0, jsBodies.length))]
+    randomPlanet.changeOrbitSMA(1)
+}
+
+bonkBtn.addEventListener('click', bonk)
 
 class Star {
     constructor () {
@@ -338,6 +353,7 @@ class Star {
 
 class Planet {
     constructor (starObj) {
+        this.starOrbiting = starObj
         let minDistance = (.01 * AU) * (starObj.temperature/solarTemp)
         let maxDistance = (15 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
@@ -353,26 +369,32 @@ class Planet {
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
         this.bodyRotationPeriod = "wizard MATH"
-        this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (starObj.starMass * solarMass), this.bodySemiMajorAxis)
+        this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starMass * solarMass), this.bodySemiMajorAxis)
         this.bodyMoons = 0
         this.bodyRings = 0
         this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
         this.bodyXPosition = 0
         this.bodyYPosition = 0
         this.bodyZPosition = 0
-        let animationSection = document.getElementById('planetBox')
-        let planetX = document.createElement("div")
+        let animationSection = planetBoxEle
+        this.planetX = document.createElement("div")
         this.bodyName = `planet${planetNumber}`
-        planetX.setAttribute('id', this.bodyName)
-        animationSection.appendChild(planetX)
-        let childrenplanets = animationSection.children
+        this.planetX.setAttribute('id', this.bodyName)
+        animationSection.appendChild(this.planetX)
+        // let childrenplanets = animationSection.children
         childrenplanets[planetNumber].style.background = getRandomColor()
-        let x = (this.bodySemiMajorAxisAU * (500/14))
-        let offset = 500
-        let orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
-        movePlanet(offset, offset, this.bodyName, x, orbitalSpeed)
-        document.getElementById(this.bodyName).onclick = function () {clickPresent(this)}
+        this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
+        this.offset = 500
+        this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
+        setOrbit(this.offset, this.offset, this.bodyName, this.displayRadius, this.orbitalSpeed)
+        document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
         planetNumber++
+    }
+    orbitSet() {
+        this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
+        this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
+        this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
+        setOrbit(this.offset, this.offset, this.bodyName, this.displayRadius, this.orbitalSpeed)
     }
     presentInfo () {
         let stats = [
@@ -395,7 +417,11 @@ class Planet {
         for (let i = 0; i < panel.length; i++) {
             panel[i].innerHTML = stats[i]
         }
-
+    }
+    changeOrbitSMA(newSMA) {
+        this.bodySemiMajorAxis = newSMA
+        this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starMass * solarMass), this.bodySemiMajorAxis)
+        this.orbitSet()
     }
 }
 
@@ -411,7 +437,7 @@ function addPlanet() {
     createNBodies(1, star)
 }
 
-
+planetGenButton.addEventListener('click', addPlanet)
 
 function createNBodies(bodyNum, starObj) {
     let newBodies = []

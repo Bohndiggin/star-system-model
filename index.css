@@ -2,6 +2,15 @@
     background-color: black;
     color: white;
 }
+nav > * {
+    background-color: rgb(255, 157, 0);
+    color: rgb(255, 255, 255);
+    font-family: 'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+}
+h1 {
+    font: 7em sans-serif;
+    
+}
 .display {
     display: flex;
     justify-content: center;
