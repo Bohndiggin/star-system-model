@@ -37,6 +37,9 @@ let childrenplanets = planetBoxEle.children
 let planetGenButton = document.getElementById('addPlanet')
 let listButton = document.getElementById('listPlanets')
 let bonkBtn = document.getElementById('bonk')
+let cease = false
+let playBtn = document.getElementById('play')
+let stopBtn = document.getElementById('stop')
 
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 class StarTypes{
@@ -285,27 +288,41 @@ function calcBodyGravity(mass, size) { //helps find relative gravity to earth
     return (mass/earthMass)/Math.pow((size/earthRadius), 2)
 }
 
-function setOrbit(xOffset, yOffset, planetName, radius, orbitalSpeed) {
-    let timer = null
-    let planet1 = document.getElementById(planetName)
-    clearInterval(timer)
-    let xPosition = 0
-    let yPosition = 0
-    timer = setInterval(frame, 5);
-    function frame() {
-        if(xPosition === 1) {
-            clearInterval(timer)
-        } else {
-            xPosition += orbitalSpeed / 100
-            yPosition += orbitalSpeed / 100
-            planet1.style.left = Math.cos(xPosition) * radius + xOffset + 'px'
-            planet1.style.top = Math.sin(yPosition) * radius + yOffset + 'px'
-        }
+// function setOrbit(xOffset, yOffset, planetName, radius, orbitalSpeed) {
+//     let timer = null
+//     let planet1 = document.getElementById(planetName)
+//     clearInterval(timer)
+//     let xPosition = 0
+//     let yPosition = 0
+//     timer = setInterval(frame, 5);
+//     function frame() {
+//         if(xPosition === 1 || cease) {
+//             clearInterval(timer)
+//         } else {
+//             xPosition += orbitalSpeed / 100
+//             yPosition += orbitalSpeed / 100
+//             planet1.style.left = Math.cos(xPosition) * radius + xOffset + 'px'
+//             planet1.style.top = Math.sin(yPosition) * radius + yOffset + 'px'
+//         }
+//     }
+// }
+
+function allStop() {
+    for (let i = 0; i < jsBodies.length; i++) {
+        jsBodies[i].cease = true       
     }
 }
 
-function allStop() {
+stopBtn.addEventListener('click', allStop)
+
+function allGo() {
+    for(let i = 0;i<jsBodies.length;i++) {
+        jsBodies[i].cease = false
+        jsBodies[i].orbitRestart()
+    }
 }
+
+playBtn.addEventListener('click', allGo)
 
 function listPlanets() {
     let htmlPlanets = planetBoxEle.children
@@ -329,7 +346,7 @@ function clickPresent(obj) {
 
 function bonk() {
     let randomPlanet = jsBodies[Math.floor(ranDumb(0, jsBodies.length))]
-    randomPlanet.changeOrbitSMA(1)
+    randomPlanet.changeOrbitSMA(10000)
 }
 
 bonkBtn.addEventListener('click', bonk)
@@ -373,9 +390,9 @@ class Planet {
         this.bodyMoons = 0
         this.bodyRings = 0
         this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
-        this.bodyXPosition = 0
-        this.bodyYPosition = 0
-        this.bodyZPosition = 0
+        // this.bodyXPosition = 0
+        // this.bodyYPosition = 0
+        // this.bodyZPosition = 0
         let animationSection = planetBoxEle
         this.planetX = document.createElement("div")
         this.bodyName = `planet${planetNumber}`
@@ -386,7 +403,24 @@ class Planet {
         this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
         this.offset = 500
         this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
-        setOrbit(this.offset, this.offset, this.bodyName, this.displayRadius, this.orbitalSpeed)
+        this.timer = null
+        this.planetHTML = document.getElementById(this.bodyName)
+        clearInterval(this.timer)
+        this.bodyXPosition = 0
+        this.bodyYPosition = 0
+        this.cease = false
+        this.timer = setInterval(frame, 5, this);
+        function frame(obj) {
+            if(obj.bodyXPosition === 1 || obj.cease) {
+                clearInterval(this.timer)
+            } else {
+                obj.bodyXPosition += obj.orbitalSpeed / 100
+                obj.bodyYPosition += obj.orbitalSpeed / 100
+                document.getElementById(obj.bodyName).style.left = Math.cos(obj.bodyXPosition) * obj.displayRadius + obj.offset + 'px'
+                document.getElementById(obj.bodyName).style.top = Math.sin(obj.bodyYPosition) * obj.displayRadius + obj.offset + 'px'
+            }
+        }
+        // setOrbit(this.offset, this.offset, this.bodyName, , this.orbitalSpeed)
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
         planetNumber++
     }
@@ -395,6 +429,22 @@ class Planet {
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
         this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
         setOrbit(this.offset, this.offset, this.bodyName, this.displayRadius, this.orbitalSpeed)
+    }
+    // orbitRestart() {
+    //     setOrbit(this.offset, this.offset, this.bodyName, this.displayRadius, this.orbitalSpeed)
+    // }
+    orbitRestart() {
+        this.timer = setInterval(frame, 5, this);
+        function frame(obj) {
+            if(obj.bodyXPosition === 1 || obj.cease) {
+                clearInterval(this.timer)
+            } else {
+                obj.bodyXPosition += obj.orbitalSpeed / 100
+                obj.bodyYPosition += obj.orbitalSpeed / 100
+                document.getElementById(obj.bodyName).style.left = Math.cos(obj.bodyXPosition) * obj.displayRadius + obj.offset + 'px'
+                document.getElementById(obj.bodyName).style.top = Math.sin(obj.bodyYPosition) * obj.displayRadius + obj.offset + 'px'
+            }
+        }
     }
     presentInfo () {
         let stats = [
@@ -421,8 +471,12 @@ class Planet {
     changeOrbitSMA(newSMA) {
         this.bodySemiMajorAxis = newSMA
         this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starMass * solarMass), this.bodySemiMajorAxis)
-        this.orbitSet()
+        this.bodyTemperature = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), this.bodySemiMajorAxis)
+        this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
+        this.bodyComposition = calcIceBlast(this)
+        this.orbitCheck()
     }
+
 }
 
 
