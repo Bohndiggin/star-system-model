@@ -174,7 +174,6 @@ function calcStarLuminosity(starTemp) { //values must be relative to the sun. YO
 //     return Math.pow(specificAngularMomentum, 2) / makeSGP(mass1, mass2)
 // }
 
-// console.log(calcP(solarMass, earthMass, 29.78))
 
 function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175K and 300K FIXED!!
     let max =  1 / (Math.pow(175 / starTemp / Math.pow(0.7, 1 / 4), 2) * 2 / starRadius)
@@ -182,9 +181,6 @@ function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175
     let minmax = [min, max]
     return minmax
 }
-
-// console.log(calcHabitableZone(solarTemp, solarRadius))
-
 
 function classifyStar(starTemp) { //I got lazy so I made a logic loop. this will name the star according to its class
     for (let i=0; i < starTypeArr.length; i++) {
@@ -197,9 +193,6 @@ function classifyStar(starTemp) { //I got lazy so I made a logic loop. this will
 function calcBodyTempSolar(starTemp, starRadius, bodySemiMajorAxis) { //MAGIC math. Determines approx. body temp based on the body's distance from it's star.
     return starTemp*Math.sqrt(starRadius/(2 * bodySemiMajorAxis)) * Math.pow(.7, 1/4)
 }
-// console.log(calcBodyTempSolar(solarTemp, solarRadius, earthSemiMajorAxis))
-// console.log(calcBodyTempSolar(solarTemp, solarRadius, AU))
-
 
 function clacBodyComposition() { //randomly choose what the planet is made of.
     let ans = {}
@@ -288,25 +281,6 @@ function calcBodyGravity(mass, size) { //helps find relative gravity to earth
     return (mass/earthMass)/Math.pow((size/earthRadius), 2)
 }
 
-// function setOrbit(xOffset, yOffset, planetName, radius, orbitalSpeed) {
-//     let timer = null
-//     let planet1 = document.getElementById(planetName)
-//     clearInterval(timer)
-//     let xPosition = 0
-//     let yPosition = 0
-//     timer = setInterval(frame, 5);
-//     function frame() {
-//         if(xPosition === 1 || cease) {
-//             clearInterval(timer)
-//         } else {
-//             xPosition += orbitalSpeed / 100
-//             yPosition += orbitalSpeed / 100
-//             planet1.style.left = Math.cos(xPosition) * radius + xOffset + 'px'
-//             planet1.style.top = Math.sin(yPosition) * radius + yOffset + 'px'
-//         }
-//     }
-// }
-
 function allStop() {
     for (let i = 0; i < jsBodies.length; i++) {
         jsBodies[i].cease = true       
@@ -390,15 +364,11 @@ class Planet {
         this.bodyMoons = 0
         this.bodyRings = 0
         this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
-        // this.bodyXPosition = 0
-        // this.bodyYPosition = 0
-        // this.bodyZPosition = 0
         let animationSection = planetBoxEle
         this.planetX = document.createElement("div")
         this.bodyName = `planet${planetNumber}`
         this.planetX.setAttribute('id', this.bodyName)
         animationSection.appendChild(this.planetX)
-        // let childrenplanets = animationSection.children
         childrenplanets[planetNumber].style.background = getRandomColor()
         this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
         this.offset = 500
@@ -420,7 +390,6 @@ class Planet {
                 document.getElementById(obj.bodyName).style.top = Math.sin(obj.bodyYPosition) * obj.displayRadius + obj.offset + 'px'
             }
         }
-        // setOrbit(this.offset, this.offset, this.bodyName, , this.orbitalSpeed)
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
         planetNumber++
     }
@@ -430,9 +399,6 @@ class Planet {
         this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
         setOrbit(this.offset, this.offset, this.bodyName, this.displayRadius, this.orbitalSpeed)
     }
-    // orbitRestart() {
-    //     setOrbit(this.offset, this.offset, this.bodyName, this.displayRadius, this.orbitalSpeed)
-    // }
     orbitRestart() {
         this.timer = setInterval(frame, 5, this);
         function frame(obj) {
@@ -479,13 +445,8 @@ class Planet {
 
 }
 
-
 let star = new Star()
 console.log(star)
-// let planet = new Planet(star)
-// console.log(planet)
-
-// movePlanet(500, 500, "planet1", 500, 0.01)
 
 function addPlanet() {
     createNBodies(1, star)
@@ -502,18 +463,4 @@ function createNBodies(bodyNum, starObj) {
     return newBodies
 }
 
-
 //testing math here.
-
-
-// let planets = createNBodies(10, star)
-// console.log(createNBodies(20, star))
-// console.log(planets)
-// let planets = createRandomPlanets(1, star)
-
-// console.log(star)
-// console.log(star[0].starHabitableZone[0]/AU)
-// console.log(planets[0].semiMajorAxis/AU)
-// console.log(planets[0].temperature)
-
-
