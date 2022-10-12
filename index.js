@@ -302,7 +302,7 @@ function allStop() {
 }
 
 function listPlanets() {
-    let htmlPlanets = document.getElementById('container').children
+    let htmlPlanets = document.getElementById('planetBox').children
     console.log(htmlPlanets)
     console.log()
 }
@@ -360,7 +360,7 @@ class Planet {
         this.bodyXPosition = 0
         this.bodyYPosition = 0
         this.bodyZPosition = 0
-        let animationSection = document.getElementById('container')
+        let animationSection = document.getElementById('planetBox')
         let planetX = document.createElement("div")
         this.bodyName = `planet${planetNumber}`
         planetX.setAttribute('id', this.bodyName)
@@ -384,7 +384,7 @@ class Planet {
             `Temperature: ${this.bodyTemperature}`,
             `Size (Relative to Earth): ${this.bodyRadius/earthRadius}`,
             `Mass (kg): ${this.bodyMass}`,
-            `Earth Masses: ${this.bodyMass/earthMass}`,
+            `Earth Masses: ${this.bodyEarthMasses}`,
             `Gravity: ${this.bodyGravity}`,
             `Orbital Info:`,
             `SemiMajorAxis: ${this.bodySemiMajorAxis}`,
