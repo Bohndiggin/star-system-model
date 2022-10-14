@@ -1,5 +1,5 @@
 *{
-    background-color: black;
+    background-color: rgb(25, 25, 25);
     color: white;
 }
 nav > * {
@@ -18,23 +18,40 @@ h1 {
 }
 #planetBox {
     position: relative;
-    width: 1050px;
-    height: 1050px;
+    /* width: 1050px;
+    height: 1050px; */
     background: black;
 }
-#planetBox > div{
-    position: absolute;
+
+#row-map {
+    display: flex;
+}
+
+#row-map > #star {
+    position: relative;
     size: 1rem;
     width: 50px;
     height: 50px;
+    border-radius: 50px;
+    background-color: aliceblue; /* use math */
+}
+
+#row-map > .planet{
+    position: relative;
+    size: 1rem;
+    width: 25px;
+    height: 25px;
     left: 50px;
     top: 50px;
     text-align: center;
     vertical-align: middle;
-    border-radius: 50px;
+    border-radius: 25px;
     background-color: blue;
+    align-content: center;
+    justify-content: center;
 }
-#planetStatDisplay {
+
+#stat-display {
     /* box-sizing: content-box; */
     position: relative;
     border: 2px;
@@ -45,7 +62,17 @@ h1 {
     align-content: space-between;
     align-items: stretch;
 }
-#planetStatDisplay > h1, h2, h3, h4, p {
+#stat-display > h1, h2, h3, h4, p {
     align-content: space-between;
     margin: 15px;
+}
+
+.center-pix {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    height: 1px;
+    width: 1px;
+    justify-self: center;
+    z-index: 0;
 }

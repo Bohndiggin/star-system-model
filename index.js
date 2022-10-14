@@ -40,6 +40,11 @@ let bonkBtn = document.getElementById('bonk')
 let cease = false
 let playBtn = document.getElementById('play')
 let stopBtn = document.getElementById('stop')
+let rowMap = document.getElementById('row-map')
+let childrenMap = rowMap.children
+
+let canvas = document.getElementById('planetBox')
+let ctx = canvas.getContext('2d')
 
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 class StarTypes{
@@ -157,9 +162,9 @@ function calcGravitationalForce(mass1, mass2, distance) { //Not sure if this is 
     return ans
 }
 
-function update() {
-    //runs everything. Moves planets. Oh wait. I only need to find the speed once. Then the updater only needs to be fed speeds once
-}
+// function update() {
+//     //runs everything. Moves planets. Oh wait. I only need to find the speed once. Then the updater only needs to be fed speeds once
+// }
 
 function calcStarRadius(mass) { //I looked up how much mass effects radius. Here you go.
     return Math.pow(mass, 0.8)
@@ -283,7 +288,7 @@ function calcBodyGravity(mass, size) { //helps find relative gravity to earth
 
 function allStop() {
     for (let i = 0; i < jsBodies.length; i++) {
-        jsBodies[i].cease = true       
+        jsBodies[i].currBodySpeed = 0     
     }
 }
 
@@ -318,6 +323,11 @@ function clickPresent(obj) {
     bodyCaught.presentInfo()
 }
 
+function clickPresentStar(event) {
+    console.log(event)
+    star.showStarStats()
+}
+
 function bonk() {
     let randomPlanet = jsBodies[Math.floor(ranDumb(0, jsBodies.length))]
     randomPlanet.changeOrbitSMA(10000)
@@ -339,7 +349,29 @@ class Star {
         this.starLuminosity = calcStarLuminosity(this.temperature)
         this.starClass = classifyStar(this.temperature)
         this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
+        this.starDiv = document.getElementById('star')
+        this.starDiv.addEventListener('click', clickPresentStar)
     }
+    showStarStats() {
+        let stats = `<h2 id="planetInfo">Planet Info</h2>
+        <p>Type: ${this.starClass}</pid=>
+        <h4>Physical Info:</h4>
+        <p>Composition: TODO</pid=>
+        <p>Temperature: ${this.temperature}</pid=>
+        <p>Size (Relative to Sol): ${this.starRadius}</p>
+        <p>Mass (relative to Sol): ${this.starMass}</p>
+        <p>Luminosity (relative to Sol): ${this.starLuminosity}</p>
+        <p>masstotal = TODO</p>
+        <p>Gravity: ${this.bodyGravity}</pid=>
+        <h4>Orbital Info:</h4d=>
+        <p>Habitable Zone (near): ${this.starHabitableZone[0]}</p>
+        <p>Habitable Zone (far): ${this.starHabitableZone[1]}</p>
+        <p>Habitable Zone (near AU): ${this.starHabitableZone[0]/AU}</p>
+        <p>Habitable Zone (far AU): ${this.starHabitableZone[1]/AU}</p>`
+        let panel = document.getElementById('stat-display')
+        panel.innerHTML = stats
+    }
+
 }
 
 class Planet {
@@ -364,32 +396,36 @@ class Planet {
         this.bodyMoons = 0
         this.bodyRings = 0
         this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
-        let animationSection = planetBoxEle
+        let animationSection = rowMap
+        this.planetColor = getRandomColor()
         this.planetX = document.createElement("div")
         this.bodyName = `planet${planetNumber}`
         this.planetX.setAttribute('id', this.bodyName)
+        this.planetX.setAttribute('class', 'planet')
+        this.centerPix = document.createElement('div')
+        this.centerPix.setAttribute('id', `${this.bodyName}Pix`)
+        this.centerPix.setAttribute('class', 'center-pix')
+        this.centerPix.style.background = this.planetColor
+        this.planetX.appendChild(this.centerPix)
         animationSection.appendChild(this.planetX)
-        childrenplanets[planetNumber].style.background = getRandomColor()
+        childrenMap[planetNumber+1].style.background = this.planetColor
         this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
         this.offset = 500
         this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
         this.timer = null
         this.planetHTML = document.getElementById(this.bodyName)
-        clearInterval(this.timer)
+        // clearInterval(this.timer)
         this.bodyXPosition = 0
         this.bodyYPosition = 0
+        this.bodyXLocation = 500
+        this.bodyYLocation = 500
         this.cease = false
-        this.timer = setInterval(frame, 5, this);
-        function frame(obj) {
-            if(obj.bodyXPosition === 1 || obj.cease) {
-                clearInterval(this.timer)
-            } else {
-                obj.bodyXPosition += obj.orbitalSpeed / 100
-                obj.bodyYPosition += obj.orbitalSpeed / 100
-                document.getElementById(obj.bodyName).style.left = Math.cos(obj.bodyXPosition) * obj.displayRadius + obj.offset + 'px'
-                document.getElementById(obj.bodyName).style.top = Math.sin(obj.bodyYPosition) * obj.displayRadius + obj.offset + 'px'
-            }
-        }
+        // this.timer = setInterval(frame, 5, this)
+        ctx.beginPath()
+        ctx.fillStyle = this.planetColor
+        ctx.arc(this.bodyXLocation, this.bodyYLocation, 10, 0, 2 * Math.PI)
+        ctx.fill()
+        this.currBodySpeed = this.orbitalSpeed
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
         planetNumber++
     }
@@ -397,42 +433,34 @@ class Planet {
         this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
         this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
-        setOrbit(this.offset, this.offset, this.bodyName, this.displayRadius, this.orbitalSpeed)
+        this.orbitRestart()
     }
     orbitRestart() {
-        this.timer = setInterval(frame, 5, this);
-        function frame(obj) {
-            if(obj.bodyXPosition === 1 || obj.cease) {
-                clearInterval(this.timer)
-            } else {
-                obj.bodyXPosition += obj.orbitalSpeed / 100
-                obj.bodyYPosition += obj.orbitalSpeed / 100
-                document.getElementById(obj.bodyName).style.left = Math.cos(obj.bodyXPosition) * obj.displayRadius + obj.offset + 'px'
-                document.getElementById(obj.bodyName).style.top = Math.sin(obj.bodyYPosition) * obj.displayRadius + obj.offset + 'px'
-            }
-        }
+        this.currBodySpeed = this.orbitalSpeed
+    }
+    updateLocation() {
+        this.bodyXPosition += this.currBodySpeed / 100
+        this.bodyYPosition += this.currBodySpeed / 100
+        this.bodyXLocation = Math.cos(this.bodyXPosition) * this.displayRadius + this.offset
+        this.bodyYLocation = Math.sin(this.bodyYPosition) * this.displayRadius + this.offset
     }
     presentInfo () {
-        let stats = [
-            `Planet Info`,
-            `Name: ${this.bodyName}`,
-            `Type: ${this.bodyType}`,
-            `Physical Info:`,
-            `Composition: ${this.bodyComposition}`,
-            `Temperature: ${this.bodyTemperature}`,
-            `Size (Relative to Earth): ${this.bodyRadius/earthRadius}`,
-            `Mass (kg): ${this.bodyMass}`,
-            `Earth Masses: ${this.bodyEarthMasses}`,
-            `Gravity: ${this.bodyGravity}`,
-            `Orbital Info:`,
-            `SemiMajorAxis: ${this.bodySemiMajorAxis}`,
-            `SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}`,
-            `Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}`
-        ]
-        let panel = document.getElementById('planetStatDisplay').children
-        for (let i = 0; i < panel.length; i++) {
-            panel[i].innerHTML = stats[i]
-        }
+        let stats = `<h2 id="planetInfo">Planet Info</h2>
+        <h3 id="planetName">Name: ${this.bodyName}</h3>
+        <p id="planet type">Type: ${this.bodyType}</p>
+        <h4 id="planetPhysicalInfo">Physical Info:</h4>
+        <p id="planetComposition">Composition: ${this.bodyComposition}</p>
+        <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
+        <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
+        <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>
+        <p id="planetMassEarths">Earth Masses: ${this.bodyMass/earthMass}</p>
+        <p id="planetG">Gravity: ${this.bodyGravity}</p>
+        <h4 id="orbitalInfo">Orbital Info:</h4>
+        <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
+        <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
+        <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>`
+        let panel = document.getElementById('stat-display')
+        panel.innerHTML = stats
     }
     changeOrbitSMA(newSMA) {
         this.bodySemiMajorAxis = newSMA
@@ -441,6 +469,17 @@ class Planet {
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyComposition = calcIceBlast(this)
         this.orbitCheck()
+    }
+    redraw() {
+        let x = this.bodyXLocation
+        let y = this.bodyYLocation
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.fillStyle = this.planetColor
+        ctx.arc(x, y, 10, 0, 2 * Math.PI)
+        ctx.strokeStyle = this.planetColor
+        ctx.fill()
+        ctx.stroke()
     }
 
 }
@@ -462,5 +501,35 @@ function createNBodies(bodyNum, starObj) {
     }
     return newBodies
 }
+function redraw(obj) {
+    ctx.beginPath()
+    ctx.fillStyle = obj.planetColor
+    let x = (obj.bodyXLocation)
+    let y = (obj.bodyYLocation)
+    ctx.moveTo(x, y)
+    ctx.arc(x, y, 10, 0, 2 * Math.PI)
+    ctx.strokeStyle = obj.planetColor
+    ctx.fill()
+}
 
+function update() {
+    let timer = null
+    timer = setInterval(frame, 5)
+    function frame() {
+        // ctx.moveTo(0, 0)
+        ctx.clearRect(0, 0, 1000, 1000)
+        for(let i = 0;i<jsBodies.length;i++) {
+            if(jsBodies[i].bodyXPosition === 1) {
+                clearInterval(timer)
+            } else { 
+                    jsBodies[i].updateLocation()
+                    jsBodies[i].redraw()
+            }
+        }
+    }
+}
+
+update()
 //testing math here.
+
+//notes: I realised that it's time to switch over to a new system. A canvas based system.  Oof

@@ -18,24 +18,13 @@
         <input type="button" value="Stop" id="stop">
     </nav>
     <section class="display">
-        <div id="planetBox">
-        </div>
-        <aside id="planetStatDisplay">
-            <h2 id="planetInfo">Planet Info</h2>
-            <h3 id="planetName">Name: </h3>
-            <p id="planet type">Type: </p>
-            <h4 id="planetPhysicalInfo">Physical Info: </h4>
-            <p id="planetComposition">Composition: </p>
-            <p id="planetTemperature">Temperature: </p>
-            <p id="planetSizeEarths">Size (Relative to Earth): </p>
-            <p id="planetMassKg">Mass (Kg): </p>
-            <p id="planetMassEarths">Earth Masses: </p>
-            <p id="planetG">Gravity: </p>
-            <h4 id="orbitalInfo">Orbital Info: </h4>
-            <p id="semiMajorAxis">SemiMajorAxis: </p>
-            <p id="semiMajorAxisAU">SemiMajorAxisAU: </p>
-            <p id="orbitalPeriod">Orbital Period (Earth Days): </p>
+        <canvas id="planetBox" width="1000px" height="1000px">
+        </canvas>
+        <aside id="stat-display">
         </aside>
+    </section>
+    <section id="row-map">
+        <div id="star"></div>
     </section>
 </body>
 <footer>
