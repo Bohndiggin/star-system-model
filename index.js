@@ -37,7 +37,12 @@ let childrenplanets = planetBoxEle.children
 let planetGenButton = document.getElementById('addPlanet')
 let listButton = document.getElementById('listPlanets')
 let bonkBtn = document.getElementById('bonk')
+let ffBtn = document.getElementById('ff')
+let rvBtn = document.getElementById('rv')
 let cease = false
+let timePeriod = 7
+let zoomLevel = 14
+let displayLevel = 500/zoomLevel
 let playBtn = document.getElementById('play')
 let stopBtn = document.getElementById('stop')
 let rowMap = document.getElementById('row-map')
@@ -287,18 +292,13 @@ function calcBodyGravity(mass, size) { //helps find relative gravity to earth
 }
 
 function allStop() {
-    for (let i = 0; i < jsBodies.length; i++) {
-        jsBodies[i].currBodySpeed = 0     
-    }
+    timePeriod = 0
 }
 
 stopBtn.addEventListener('click', allStop)
 
 function allGo() {
-    for(let i = 0;i<jsBodies.length;i++) {
-        jsBodies[i].cease = false
-        jsBodies[i].orbitRestart()
-    }
+    timePeriod = 7
 }
 
 playBtn.addEventListener('click', allGo)
@@ -330,7 +330,7 @@ function clickPresentStar(event) {
 
 function bonk() {
     let randomPlanet = jsBodies[Math.floor(ranDumb(0, jsBodies.length))]
-    randomPlanet.changeOrbitSMA(10000)
+    randomPlanet.changeOrbitSMA(100)
 }
 
 bonkBtn.addEventListener('click', bonk)
@@ -363,7 +363,7 @@ class Star {
         <p>Luminosity (relative to Sol): ${this.starLuminosity}</p>
         <p>masstotal = TODO</p>
         <p>Gravity: ${this.bodyGravity}</pid=>
-        <h4>Orbital Info:</h4d=>
+        <h4>Orbital Info:</h4>
         <p>Habitable Zone (near): ${this.starHabitableZone[0]}</p>
         <p>Habitable Zone (far): ${this.starHabitableZone[1]}</p>
         <p>Habitable Zone (near AU): ${this.starHabitableZone[0]/AU}</p>
@@ -409,40 +409,40 @@ class Planet {
         this.planetX.appendChild(this.centerPix)
         animationSection.appendChild(this.planetX)
         childrenMap[planetNumber+1].style.background = this.planetColor
-        this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
+        this.displayRadius = (this.bodySemiMajorAxisAU * displayLevel)
         this.offset = 500
-        this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
+        this.orbitalSpeed = (365/this.bodyOrbitalPeriod)
         this.timer = null
         this.planetHTML = document.getElementById(this.bodyName)
         // clearInterval(this.timer)
-        this.bodyXPosition = 0
-        this.bodyYPosition = 0
+        this.bodyXOrbitJourney = 0
+        this.bodyYOrbitJourney = 0
         this.bodyXLocation = 500
         this.bodyYLocation = 500
         this.cease = false
+        this.bodyRadiusEarth = this.bodyRadius/earthRadius
         // this.timer = setInterval(frame, 5, this)
         ctx.beginPath()
         ctx.fillStyle = this.planetColor
-        ctx.arc(this.bodyXLocation, this.bodyYLocation, 10, 0, 2 * Math.PI)
+        ctx.arc(this.bodyXLocation, this.bodyYLocation, this.bodyRadiusEarth * 10, 0, 2 * Math.PI)
         ctx.fill()
-        this.currBodySpeed = this.orbitalSpeed
+        this.currBodySpeed = this.orbitalSpeed * timePeriod
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
         planetNumber++
     }
     orbitSet() {
-        this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * 7
+        this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * timePeriod
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
-        this.displayRadius = (this.bodySemiMajorAxisAU * (500/14))
+        this.displayRadius = (this.bodySemiMajorAxisAU * displayLevel)
         this.orbitRestart()
     }
-    orbitRestart() {
-        this.currBodySpeed = this.orbitalSpeed
-    }
-    updateLocation() {
-        this.bodyXPosition += this.currBodySpeed / 100
-        this.bodyYPosition += this.currBodySpeed / 100
-        this.bodyXLocation = Math.cos(this.bodyXPosition) * this.displayRadius + this.offset
-        this.bodyYLocation = Math.sin(this.bodyYPosition) * this.displayRadius + this.offset
+    updateLocation() { //Major Rework for elipses
+        this.currBodySpeed = this.orbitalSpeed * timePeriod
+        this.bodyXOrbitJourney += this.currBodySpeed / 100
+        this.bodyYOrbitJourney += this.currBodySpeed / 100
+        this.displayRadius = this.bodySemiMajorAxisAU * displayLevel
+        this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * this.displayRadius + this.offset
+        this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * this.displayRadius + this.offset
     }
     presentInfo () {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
@@ -464,11 +464,12 @@ class Planet {
     }
     changeOrbitSMA(newSMA) {
         this.bodySemiMajorAxis = newSMA
+        this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
         this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starMass * solarMass), this.bodySemiMajorAxis)
-        this.bodyTemperature = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), this.bodySemiMajorAxis)
+        this.orbitSet()
+        this.bodyTemperature = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), newSMA)
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyComposition = calcIceBlast(this)
-        this.orbitCheck()
     }
     redraw() {
         let x = this.bodyXLocation
@@ -476,7 +477,7 @@ class Planet {
         ctx.beginPath()
         ctx.moveTo(x, y)
         ctx.fillStyle = this.planetColor
-        ctx.arc(x, y, 10, 0, 2 * Math.PI)
+        ctx.arc(x, y, this.bodyRadiusEarth * 10, 0, 2 * Math.PI)
         ctx.strokeStyle = this.planetColor
         ctx.fill()
         ctx.stroke()
@@ -529,7 +530,26 @@ function update() {
     }
 }
 
+function fastForward() {
+    timePeriod++
+}
+
+function zoomIn() {
+    zoomLevel--
+    displayLevel = (500/zoomLevel)
+}
+
+ffBtn.addEventListener('click', fastForward)
+
+function slowReverse() {
+    timePeriod--
+}
+
+rvBtn.addEventListener('click', slowReverse)
+
+canvas.addEventListener('onscroll', zoomIn)
+
 update()
 //testing math here.
 
-//notes: I realised that it's time to switch over to a new system. A canvas based system.  Oof
+//notes: I realised that it's time to switch over to a new system. A canvas based system.  Oof//10.14.2022 IMPLEMENTED!!

@@ -25,6 +25,8 @@ h1 {
 
 #row-map {
     display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #row-map > #star {
@@ -41,14 +43,15 @@ h1 {
     size: 1rem;
     width: 25px;
     height: 25px;
-    left: 50px;
-    top: 50px;
-    text-align: center;
-    vertical-align: middle;
+    /* left: 50px;
+    top: 50px; */
+    /* text-align: center; */
+    /* vertical-align: middle; */
     border-radius: 25px;
     background-color: blue;
-    align-content: center;
-    justify-content: center;
+    /* align-content: center;
+    justify-content: center; */
+    margin: auto;
 }
 
 #stat-display {
@@ -56,6 +59,8 @@ h1 {
     position: relative;
     border: 2px;
     border-style: solid;
+    height: 750px;
+    width: 500px;
     border-color: rgb(255, 157, 0);
     margin: 15px;
     justify-self: flex-start;
@@ -65,7 +70,22 @@ h1 {
 #stat-display > h1, h2, h3, h4, p {
     align-content: space-between;
     margin: 15px;
+    font-family: sans-serif;
 }
+
+#stat-display > h2 {
+    font: 4rem sans-serif;
+}
+#stat-display > h3 {
+    font: 3rem sans-serif;
+}
+#stat-display > h4 {
+    font: 2rem sans-serif;
+}
+#stat-display > p {
+    font: 1rem sans-serif;
+}
+
 
 .center-pix {
     position: absolute;
