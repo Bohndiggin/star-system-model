@@ -41,12 +41,13 @@ let ffBtn = document.getElementById('ff')
 let rvBtn = document.getElementById('rv')
 let cease = false
 let timePeriod = 7
-let zoomLevel = 14
+let zoomLevel = 10000
 let displayLevel = 500/zoomLevel
 let playBtn = document.getElementById('play')
 let stopBtn = document.getElementById('stop')
 let rowMap = document.getElementById('row-map')
 let childrenMap = rowMap.children
+let unrealFactor = 500
 
 let canvas = document.getElementById('planetBox')
 let ctx = canvas.getContext('2d')
@@ -340,8 +341,8 @@ class Star {
         let currentClass = ranDumb(1, 10000)/100
         for(let j = 0;j < starTypeArr.length;j++) {
             if (currentClass <= starTypeArr[j].frequency) { //using Math.random I generate the stats of the stars.
-                this.temperature = ranDumb(starTypeArr[j].minTemp, starTypeArr[j].maxTemp)
-                this.starMass = ranDumb(starTypeArr[j].minMass, starTypeArr[j].maxMass)
+                this.temperature = 5700//ranDumb(starTypeArr[j].minTemp, starTypeArr[j].maxTemp)
+                this.starMass = 1 //ranDumb(starTypeArr[j].minMass, starTypeArr[j].maxMass)
                 break
             }
         }
@@ -351,6 +352,18 @@ class Star {
         this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
         this.starDiv = document.getElementById('star')
         this.starDiv.addEventListener('click', clickPresentStar)
+        this.starColor = '#f0f8ff'
+        this.starDisplayRadius = this.starRadius * (solarRadius / earthRadius) * displayLevel
+        ctx.beginPath()
+        let x = 500
+        let y = 500
+        ctx.moveTo(x, y)
+        ctx.fillStyle = this.starColor
+        ctx.arc(x, y, this.starDisplayRadius * 10, 0, 2 * Math.PI)
+        ctx.strokeStyle = this.starColor
+        ctx.fill()
+        ctx.stroke()
+
     }
     showStarStats() {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
@@ -371,13 +384,37 @@ class Star {
         let panel = document.getElementById('stat-display')
         panel.innerHTML = stats
     }
+    redraw() {
+        this.hZRadiusClose = (this.starHabitableZone[0] / AU) * displayLevel
+        this.hZRadiusFar = (this.starHabitableZone[1] / AU) * displayLevel
+        this.starDisplayRadius = (this.starRadius * (solarRadius / earthRadius) * displayLevel) / unrealFactor
+        let x = 500
+        let y = 500
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.fillStyle = this.starColor
+        ctx.arc(x, y, this.starDisplayRadius * 10, 0, 2 * Math.PI)
+        ctx.strokeStyle = this.starColor
+        ctx.fill()
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.arc(x, y, this.hZRadiusClose * unrealFactor, 0, 2 * Math.PI)
+        ctx.strokeStyle = 'white'
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.strokeStyle = 'white'
+        ctx.arc(x, y, this.hZRadiusFar * unrealFactor, 0, 2 * Math.PI)
+        ctx.stroke()
+    }
 
 }
 
 class Planet {
     constructor (starObj) {
         this.starOrbiting = starObj
-        let minDistance = (.01 * AU) * (starObj.temperature/solarTemp)
+        let minDistance = (.005 * AU) * (starObj.temperature/solarTemp)
         let maxDistance = (15 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
@@ -410,6 +447,7 @@ class Planet {
         animationSection.appendChild(this.planetX)
         childrenMap[planetNumber+1].style.background = this.planetColor
         this.displayRadius = (this.bodySemiMajorAxisAU * displayLevel)
+        this.bodyDisplayRadius = this.bodyRadius * (earthRadius/solarRadius) * displayLevel
         this.offset = 500
         this.orbitalSpeed = (365/this.bodyOrbitalPeriod)
         this.timer = null
@@ -424,7 +462,7 @@ class Planet {
         // this.timer = setInterval(frame, 5, this)
         ctx.beginPath()
         ctx.fillStyle = this.planetColor
-        ctx.arc(this.bodyXLocation, this.bodyYLocation, this.bodyRadiusEarth * 10, 0, 2 * Math.PI)
+        ctx.arc(this.bodyXLocation, this.bodyYLocation, this.bodyDisplayRadius, 0, 2 * Math.PI)
         ctx.fill()
         this.currBodySpeed = this.orbitalSpeed * timePeriod
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
@@ -440,7 +478,7 @@ class Planet {
         this.currBodySpeed = this.orbitalSpeed * timePeriod
         this.bodyXOrbitJourney += this.currBodySpeed / 100
         this.bodyYOrbitJourney += this.currBodySpeed / 100
-        this.displayRadius = this.bodySemiMajorAxisAU * displayLevel
+        this.displayRadius = this.bodySemiMajorAxisAU * displayLevel * unrealFactor //500 is the 'unreal' factor
         this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * this.displayRadius + this.offset
         this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * this.displayRadius + this.offset
     }
@@ -471,13 +509,14 @@ class Planet {
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyComposition = calcIceBlast(this)
     }
-    redraw() {
+    redraw() { // ADD If selected, it has an outer glow
         let x = this.bodyXLocation
         let y = this.bodyYLocation
+        this.bodyDisplayRadius = this.bodyRadius * (earthRadius/solarRadius) * displayLevel
         ctx.beginPath()
         ctx.moveTo(x, y)
         ctx.fillStyle = this.planetColor
-        ctx.arc(x, y, this.bodyRadiusEarth * 10, 0, 2 * Math.PI)
+        ctx.arc(x, y, this.bodyDisplayRadius, 0, 2 * Math.PI)
         ctx.strokeStyle = this.planetColor
         ctx.fill()
         ctx.stroke()
@@ -527,6 +566,7 @@ function update() {
                     jsBodies[i].redraw()
             }
         }
+        star.redraw()
     }
 }
 
@@ -535,7 +575,7 @@ function fastForward() {
 }
 
 function zoomIn() {
-    zoomLevel--
+    zoomLevel -= 500
     displayLevel = (500/zoomLevel)
 }
 
@@ -547,7 +587,7 @@ function slowReverse() {
 
 rvBtn.addEventListener('click', slowReverse)
 
-canvas.addEventListener('onscroll', zoomIn)
+canvas.addEventListener('click', zoomIn)
 
 update()
 //testing math here.
