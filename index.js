@@ -39,6 +39,9 @@ let listButton = document.getElementById('listPlanets')
 let bonkBtn = document.getElementById('bonk')
 let ffBtn = document.getElementById('ff')
 let rvBtn = document.getElementById('rv')
+let benchBtn = document.getElementById('bench')
+let panel = document.getElementById('stat-display')
+
 let cease = false
 let timePeriod = 7
 let zoomLevel = 10000
@@ -381,7 +384,7 @@ class Star {
         <p>Habitable Zone (far): ${this.starHabitableZone[1]}</p>
         <p>Habitable Zone (near AU): ${this.starHabitableZone[0]/AU}</p>
         <p>Habitable Zone (far AU): ${this.starHabitableZone[1]/AU}</p>`
-        let panel = document.getElementById('stat-display')
+        // let panel = document.getElementById('stat-display')
         panel.innerHTML = stats
     }
     redraw() {
@@ -459,6 +462,7 @@ class Planet {
         this.bodyYLocation = 500
         this.cease = false
         this.bodyRadiusEarth = this.bodyRadius/earthRadius
+        this.eccentricity = 0.5
         // this.timer = setInterval(frame, 5, this)
         ctx.beginPath()
         ctx.fillStyle = this.planetColor
@@ -466,6 +470,9 @@ class Planet {
         ctx.fill()
         this.currBodySpeed = this.orbitalSpeed * timePeriod
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
+        this.grd = ctx.createRadialGradient(75, 50, 5, 90, 60, 100);
+        this.grd.addColorStop(0, 'white');
+        this.grd.addColorStop(1, this.planetColor);
         planetNumber++
     }
     orbitSet() {
@@ -475,12 +482,21 @@ class Planet {
         this.orbitRestart()
     }
     updateLocation() { //Major Rework for elipses
-        this.currBodySpeed = this.orbitalSpeed * timePeriod
-        this.bodyXOrbitJourney += this.currBodySpeed / 100
-        this.bodyYOrbitJourney += this.currBodySpeed / 100
+        // this.currBodySpeed = this.orbitalSpeed * timePeriod
         this.displayRadius = this.bodySemiMajorAxisAU * displayLevel * unrealFactor //500 is the 'unreal' factor
-        this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * this.displayRadius + this.offset
-        this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * this.displayRadius + this.offset
+        // console.log(this.displayRadius)
+        this.displayRadius =  (((this.displayRadius * (1 - Math.pow(this.eccentricity, 2))))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))) * this.displayRadius
+        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - Math.pow(this.eccentricity, 2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))) * this.displayRadius
+        this.displayYRadius = ((this.bodySemiMajorAxisAU * (1 - Math.pow(this.eccentricity, 2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))) * this.displayRadius
+        this.currBodySpeed = ((Math.sqrt(makeSGP(this.bodyMass, this.starOrbiting.starMass * solarMass) * ((2/this.displayRadius)-(1/this.bodySemiMajorAxis)))/unrealFactor) * timePeriod) // unrealFactor
+        // this.currBodySpeed = (Math.sqrt((2 * makeSGP(this.bodyMass, this.starOrbiting.starMass * solarMass))/this.displayRadius))
+        this.bodyXOrbitJourney += this.currBodySpeed / AU
+        // this.bodyOrbitJourney += this.currBodySpeed / AU
+        // console.log(this.bodyXOrbitJourney)
+        this.bodyYOrbitJourney += this.currBodySpeed / AU
+        // console.log(this.displayXRadius)
+        this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * (this.displayXRadius * displayLevel) + this.offset
+        this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * (this.displayYRadius * displayLevel) + this.offset
     }
     presentInfo () {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
@@ -497,8 +513,11 @@ class Planet {
         <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
         <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
         <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>`
-        let panel = document.getElementById('stat-display')
         panel.innerHTML = stats
+        for (let i = 0; i < jsBodies.length; i++) {
+            jsBodies[i].selected = false
+        }
+        this.selected = true
     }
     changeOrbitSMA(newSMA) {
         this.bodySemiMajorAxis = newSMA
@@ -509,7 +528,7 @@ class Planet {
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyComposition = calcIceBlast(this)
     }
-    redraw() { // ADD If selected, it has an outer glow
+    redraw() { // ADD If selected, it has an outer glow ALSO ADD THE PICS TO THE DIVS
         let x = this.bodyXLocation
         let y = this.bodyYLocation
         this.bodyDisplayRadius = this.bodyRadius * (earthRadius/solarRadius) * displayLevel
@@ -520,6 +539,13 @@ class Planet {
         ctx.strokeStyle = this.planetColor
         ctx.fill()
         ctx.stroke()
+        if(this.selected) {
+            ctx.beginPath()
+            ctx.moveTo(x, y)
+            ctx.arc(x, y, this.bodyDisplayRadius + 5, 0, 2 * Math.PI)
+            ctx.strokeStyle = this.grd
+            ctx.stroke()
+        }
     }
 
 }
@@ -589,7 +615,18 @@ rvBtn.addEventListener('click', slowReverse)
 
 canvas.addEventListener('click', zoomIn)
 
+function bench() {
+    createNBodies(1000, star)
+}
+
+benchBtn.addEventListener('click', bench)
+
+
 update()
 //testing math here.
+
+console.log((152100000 + 147095000)/2)
+
+
 
 //notes: I realised that it's time to switch over to a new system. A canvas based system.  Oof//10.14.2022 IMPLEMENTED!!
