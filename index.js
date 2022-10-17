@@ -43,7 +43,7 @@ let benchBtn = document.getElementById('bench')
 let panel = document.getElementById('stat-display')
 
 let cease = false
-let timePeriod = 7
+let timePeriod = 10
 let zoomLevel = 10000
 let displayLevel = 500/zoomLevel
 let playBtn = document.getElementById('play')
@@ -417,22 +417,32 @@ class Star {
 class Planet {
     constructor (starObj) {
         this.starOrbiting = starObj
-        let minDistance = (.005 * AU) * (starObj.temperature/solarTemp)
-        let maxDistance = (15 * AU) * (starObj.temperature/solarTemp)
-        this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
-        this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
+        this.eccentricity = 0.5
         this.bodyRadius = ranDumb(600, 9999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        this.bodyTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.bodySemiMajorAxis)
         this.bodyComposition = clacBodyComposition()
-        this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
-        this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
-        this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
         //this.bodyType = calcBodyTypeSecondPass()
         this.bodyComposition = calcIceBlast(this)
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
+        this.sGP = makeSGP(this.bodyMass, this.starOrbiting.starMass * solarMass)
+        let minDistance = (.005 * AU) * (starObj.temperature/solarTemp)
+        let maxDistance = (10 * AU) * (starObj.temperature/solarTemp)
+        this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
+        this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
+        this.bodyVelocity = calcOrbitalSpeedKmps(this.bodyMass, this.starOrbiting.starMass * solarMass, this.bodySemiMajorAxis)
+        this.angularMomentum = this.bodyMass * this.bodyVelocity * this.semiMajorAxis
+        this.specificAngularMomentum = this.angularMomentum / this.bodyMass
         this.bodyRotationPeriod = "wizard MATH"
         this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starMass * solarMass), this.bodySemiMajorAxis)
+        this.bodyTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.bodySemiMajorAxis)
+        this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
+        this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
+        this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
+        this.bodyParameter = (this.specificAngularMomentum**2 / this.sGP)
+        //this section 'bonks' the orbit to be eccentric
+        this.bodyPeriapsis = this.bodyParameter / (1 - this.eccentricity**2)
+        this.bodyApoapsis = this.bodyParameter / (1 - this.eccentricity**2)
+        this.bodyOrbitalPeriod = 2 * Math.PI * Math.sqrt(this.bodySemiMajorAxis**3 / this.sGP)
         this.bodyMoons = 0
         this.bodyRings = 0
         this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
@@ -462,7 +472,7 @@ class Planet {
         this.bodyYLocation = 500
         this.cease = false
         this.bodyRadiusEarth = this.bodyRadius/earthRadius
-        this.eccentricity = 0.5
+        // this.eccentricity = 0.7
         // this.timer = setInterval(frame, 5, this)
         ctx.beginPath()
         ctx.fillStyle = this.planetColor
@@ -482,21 +492,15 @@ class Planet {
         this.orbitRestart()
     }
     updateLocation() { //Major Rework for elipses
-        // this.currBodySpeed = this.orbitalSpeed * timePeriod
-        this.displayRadius = this.bodySemiMajorAxisAU * displayLevel * unrealFactor //500 is the 'unreal' factor
-        // console.log(this.displayRadius)
-        this.displayRadius =  (((this.displayRadius * (1 - Math.pow(this.eccentricity, 2))))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))) * this.displayRadius
-        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - Math.pow(this.eccentricity, 2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))) * this.displayRadius
-        this.displayYRadius = ((this.bodySemiMajorAxisAU * (1 - Math.pow(this.eccentricity, 2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))) * this.displayRadius
-        this.currBodySpeed = ((Math.sqrt(makeSGP(this.bodyMass, this.starOrbiting.starMass * solarMass) * ((2/this.displayRadius)-(1/this.bodySemiMajorAxis)))/unrealFactor) * timePeriod) // unrealFactor
-        // this.currBodySpeed = (Math.sqrt((2 * makeSGP(this.bodyMass, this.starOrbiting.starMass * solarMass))/this.displayRadius))
-        this.bodyXOrbitJourney += this.currBodySpeed / AU
-        // this.bodyOrbitJourney += this.currBodySpeed / AU
-        // console.log(this.bodyXOrbitJourney)
+        this.displayRadius = this.bodySemiMajorAxisAU * displayLevel * (unrealFactor/5) //500 is the 'unreal' factor
+        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))
+        this.displayYRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyYOrbitJourney))
+        this.currBodyDistance = (((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))))
+        this.currBodySpeed = ((Math.sqrt(this.sGP * ((2/this.currBodyDistance)-(1/this.bodySemiMajorAxisAU))))/unrealFactor) * timePeriod / (unrealFactor/5)
+        this.bodyXOrbitJourney += this.currBodySpeed / AU 
         this.bodyYOrbitJourney += this.currBodySpeed / AU
-        // console.log(this.displayXRadius)
-        this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * (this.displayXRadius * displayLevel) + this.offset
-        this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * (this.displayYRadius * displayLevel) + this.offset
+        this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * ((this.displayXRadius * unrealFactor)) * displayLevel + this.offset
+        this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * ((this.displayYRadius * unrealFactor)) * displayLevel + this.offset
     }
     presentInfo () {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
@@ -512,7 +516,9 @@ class Planet {
         <h4 id="orbitalInfo">Orbital Info:</h4>
         <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
         <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
-        <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>`
+        <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
+        <p>Apoapsis: ${this.bodyApoapsis}</p>
+        <p>Periapsis: ${this.bodyPeriapsis}</p>`
         panel.innerHTML = stats
         for (let i = 0; i < jsBodies.length; i++) {
             jsBodies[i].selected = false
@@ -625,8 +631,7 @@ benchBtn.addEventListener('click', bench)
 update()
 //testing math here.
 
-console.log((152100000 + 147095000)/2)
 
-
+// createNBodies(1000, star)
 
 //notes: I realised that it's time to switch over to a new system. A canvas based system.  Oof//10.14.2022 IMPLEMENTED!!
