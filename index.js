@@ -73,11 +73,11 @@ class StarTypes{
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 const starTypeArr = [
     new StarTypes(30000, 1000000, 'O', 16, 20, 6.6, 8, 30000, 50000, 0.03),
-    new StarTypes(10000, 30000, 'B', 2.1, 16, 1.8, 30000, 25, 0.22),
-    new StarTypes(7500, 10000, 'A', 1.4, 2.1, 1.4, 1.8, 5, 25, 0.6),
-    new StarTypes(6000, 7500, 'F', 1.04, 1.4, 1.15, 1.4, 1.5, 5, 3),
-    new StarTypes(5200, 6000, 'G', 0.8, 1.04, 0.96, 1.15, 0.6, 1.5, 7.6),
-    new StarTypes(3700, 5200, 'K', 0.45, 0.8, 0.7, 0.96, 0.08, 0.6, 12.1),
+    new StarTypes(10000, 30000, 'B', 2.1, 16, 1.8, 30000, 25, 0.25),
+    new StarTypes(7500, 10000, 'A', 1.4, 2.1, 1.4, 1.8, 5, 25, 0.85),
+    new StarTypes(6000, 7500, 'F', 1.04, 1.4, 1.15, 1.4, 1.5, 5, 3.85),
+    new StarTypes(5200, 6000, 'G', 0.8, 1.04, 0.96, 1.15, 0.6, 1.5, 10),
+    new StarTypes(3700, 5200, 'K', 0.45, 0.8, 0.7, 0.96, 0.08, 0.6, 22.1),
     new StarTypes(2400, 3700, 'M', 0.08, 0.45, 0.00001, 0.07, 0.00001, 0.08, 100)
 ]
 
@@ -324,6 +324,10 @@ function clickPresent(obj) {
             break            
         } 
     }
+    for (let i = 0; i < jsBodies.length; i++) {
+        jsBodies[i].selected = false        
+    }
+    bodyCaught.selected = true
     bodyCaught.presentInfo()
 }
 
@@ -424,7 +428,7 @@ class Planet {
         this.bodyComposition = calcIceBlast(this)
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
-        this.sGP = makeSGP(this.bodyMass, this.starOrbiting.starMass * solarMass)
+        this.sGP = makeSGP(this.bodyMass, (this.starOrbiting.starMass * solarMass))
         let minDistance = (.005 * AU) * (starObj.temperature/solarTemp)
         let maxDistance = (10 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
@@ -434,11 +438,11 @@ class Planet {
         this.specificAngularMomentum = this.angularMomentum / this.bodyMass
         this.bodyRotationPeriod = "wizard MATH"
         this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starMass * solarMass), this.bodySemiMajorAxis)
-        this.bodyTemperature = calcBodyTempSolar(starObj.temperature, (starObj.starRadius * solarRadius), this.bodySemiMajorAxis)
+        this.bodyTemperature = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), this.bodySemiMajorAxis)
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
-        this.bodyParameter = (this.specificAngularMomentum**2 / this.sGP)
+        this.bodyParameter = ((this.specificAngularMomentum ** 2) / this.sGP)
         //this section 'bonks' the orbit to be eccentric
         this.bodyPeriapsis = this.bodyParameter / (1 - this.eccentricity**2)
         this.bodyApoapsis = this.bodyParameter / (1 - this.eccentricity**2)
@@ -452,11 +456,11 @@ class Planet {
         this.bodyName = `planet${planetNumber}`
         this.planetX.setAttribute('id', this.bodyName)
         this.planetX.setAttribute('class', 'planet')
-        this.centerPix = document.createElement('div')
-        this.centerPix.setAttribute('id', `${this.bodyName}Pix`)
-        this.centerPix.setAttribute('class', 'center-pix')
-        this.centerPix.style.background = this.planetColor
-        this.planetX.appendChild(this.centerPix)
+        // this.centerPix = document.createElement('div')
+        // this.centerPix.setAttribute('id', `${this.bodyName}Pix`)
+        // this.centerPix.setAttribute('class', 'center-pix')
+        // this.centerPix.style.background = this.planetColor
+        // this.planetX.appendChild(this.centerPix)
         animationSection.appendChild(this.planetX)
         childrenMap[planetNumber+1].style.background = this.planetColor
         this.displayRadius = (this.bodySemiMajorAxisAU * displayLevel)
@@ -470,6 +474,7 @@ class Planet {
         this.bodyYOrbitJourney = 0
         this.bodyXLocation = 500
         this.bodyYLocation = 500
+        this.bodyCurrTemp = 0
         this.cease = false
         this.bodyRadiusEarth = this.bodyRadius/earthRadius
         // this.eccentricity = 0.7
@@ -491,6 +496,9 @@ class Planet {
         this.displayRadius = (this.bodySemiMajorAxisAU * displayLevel)
         this.orbitRestart()
     }
+    updateTemperature(distance) {
+        this.bodyCurrTemp = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), distance)
+    }
     updateLocation() { //Major Rework for elipses
         this.displayRadius = this.bodySemiMajorAxisAU * displayLevel * (unrealFactor/5) //500 is the 'unreal' factor
         this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))
@@ -501,29 +509,31 @@ class Planet {
         this.bodyYOrbitJourney += this.currBodySpeed / AU
         this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * ((this.displayXRadius * unrealFactor)) * displayLevel + this.offset
         this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * ((this.displayYRadius * unrealFactor)) * displayLevel + this.offset
+        this.updateTemperature(this.currBodyDistance * AU)
+        this.presentInfo()
     }
     presentInfo () {
-        let stats = `<h2 id="planetInfo">Planet Info</h2>
-        <h3 id="planetName">Name: ${this.bodyName}</h3>
-        <p id="planet type">Type: ${this.bodyType}</p>
-        <h4 id="planetPhysicalInfo">Physical Info:</h4>
-        <p id="planetComposition">Composition: ${this.bodyComposition}</p>
-        <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
-        <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
-        <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>
-        <p id="planetMassEarths">Earth Masses: ${this.bodyMass/earthMass}</p>
-        <p id="planetG">Gravity: ${this.bodyGravity}</p>
-        <h4 id="orbitalInfo">Orbital Info:</h4>
-        <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
-        <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
-        <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
-        <p>Apoapsis: ${this.bodyApoapsis}</p>
-        <p>Periapsis: ${this.bodyPeriapsis}</p>`
-        panel.innerHTML = stats
-        for (let i = 0; i < jsBodies.length; i++) {
-            jsBodies[i].selected = false
+        if(this.selected) {
+            let stats = `<h2 id="planetInfo">Planet Info</h2>
+            <h3 id="planetName">Name: ${this.bodyName}</h3>
+            <p id="planet type">Type: ${this.bodyType}</p>
+            <h4 id="planetPhysicalInfo">Physical Info:</h4>
+            <p id="planetComposition">Composition: ${this.bodyComposition}</p>
+            <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
+            <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
+            <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>
+            <p id="planetMassEarths">Earth Masses: ${this.bodyMass/earthMass}</p>
+            <p id="planetG">Gravity: ${this.bodyGravity}</p>
+            <h4 id="orbitalInfo">Orbital Info:</h4>
+            <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
+            <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
+            <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
+            <p>Apoapsis: ${this.bodyApoapsis}</p>
+            <p>Periapsis: ${this.bodyPeriapsis}</p>
+            <p>CUR DIST: ${this.currBodyDistance * AU}</p>
+            <p>CURR TEMP: ${this.bodyCurrTemp}</p>`
+            panel.innerHTML = stats
         }
-        this.selected = true
     }
     changeOrbitSMA(newSMA) {
         this.bodySemiMajorAxis = newSMA
@@ -634,4 +644,4 @@ update()
 
 // createNBodies(1000, star)
 
-//notes: I realised that it's time to switch over to a new system. A canvas based system.  Oof//10.14.2022 IMPLEMENTED!!
+//notes: Time to update temperature every update frame
