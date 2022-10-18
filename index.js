@@ -477,6 +477,7 @@ class Planet {
         this.bodyCurrTemp = 0
         this.cease = false
         this.bodyRadiusEarth = this.bodyRadius/earthRadius
+        this.bodyLocations = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
         // this.eccentricity = 0.7
         // this.timer = setInterval(frame, 5, this)
         ctx.beginPath()
@@ -509,6 +510,10 @@ class Planet {
         this.bodyYOrbitJourney += this.currBodySpeed / AU
         this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * ((this.displayXRadius * unrealFactor)) * displayLevel + this.offset
         this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * ((this.displayYRadius * unrealFactor)) * displayLevel + this.offset
+        
+        
+        this.bodyLocations.shift(0)
+        this.bodyLocations.push([this.bodyXLocation, this.bodyYLocation])
         this.updateTemperature(this.currBodyDistance * AU)
         this.presentInfo()
     }
@@ -530,8 +535,9 @@ class Planet {
             <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
             <p>Apoapsis: ${this.bodyApoapsis}</p>
             <p>Periapsis: ${this.bodyPeriapsis}</p>
-            <p>CUR DIST: ${this.currBodyDistance * AU}</p>
-            <p>CURR TEMP: ${this.bodyCurrTemp}</p>`
+            <p>CUR DIST: ${Math.floor(this.currBodyDistance * AU)}</p>
+            <p>CURR TEMP: ${Math.floor(this.bodyCurrTemp)}</p>
+            <p>CURR SPD: ${Math.floor(this.currBodySpeed)}</p>`
             panel.innerHTML = stats
         }
     }
@@ -545,17 +551,34 @@ class Planet {
         this.bodyComposition = calcIceBlast(this)
     }
     redraw() { // ADD If selected, it has an outer glow ALSO ADD THE PICS TO THE DIVS
-        let x = this.bodyXLocation
-        let y = this.bodyYLocation
+        // let x = this.bodyXLocation
+        // let y = this.bodyYLocation
         this.bodyDisplayRadius = this.bodyRadius * (earthRadius/solarRadius) * displayLevel
+        for (let i = 0; i < this.bodyLocations.length; i++){
+            let x = this.bodyLocations[i][0]
+            let y = this.bodyLocations[i][1]
+            ctx.beginPath()
+            ctx.moveTo(x, y)
+            ctx.fillStyle = this.planetColor
+            this.radius = this.bodyDisplayRadius
+            ctx.arc(x, y, 1, 0, 2 * Math.PI)
+            ctx.strokeStyle = this.planetColor
+            ctx.fill()
+            ctx.stroke()
+        }
+        let x = this.bodyLocations[this.bodyLocations.length - 1][0]
+        let y = this.bodyLocations[this.bodyLocations.length - 1][1]
         ctx.beginPath()
         ctx.moveTo(x, y)
         ctx.fillStyle = this.planetColor
+        this.radius = this.bodyDisplayRadius
         ctx.arc(x, y, this.bodyDisplayRadius, 0, 2 * Math.PI)
         ctx.strokeStyle = this.planetColor
         ctx.fill()
         ctx.stroke()
         if(this.selected) {
+            let x = this.bodyLocations[this.bodyLocations.length - 1][0]
+            let y = this.bodyLocations[this.bodyLocations.length - 1][1]
             ctx.beginPath()
             ctx.moveTo(x, y)
             ctx.arc(x, y, this.bodyDisplayRadius + 5, 0, 2 * Math.PI)
