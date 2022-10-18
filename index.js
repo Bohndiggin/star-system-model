@@ -421,7 +421,7 @@ class Star {
 class Planet {
     constructor (starObj) {
         this.starOrbiting = starObj
-        this.eccentricity = 0.5
+        this.eccentricity = 0.7
         this.bodyRadius = ranDumb(600, 9999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         this.bodyComposition = clacBodyComposition()
         //this.bodyType = calcBodyTypeSecondPass()
@@ -433,6 +433,7 @@ class Planet {
         let maxDistance = (10 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
+        this.bodySemiMinorAxis = this.bodySemiMajorAxis * Math.sqrt(1 - this.eccentricity**2)
         this.bodyVelocity = calcOrbitalSpeedKmps(this.bodyMass, this.starOrbiting.starMass * solarMass, this.bodySemiMajorAxis)
         this.angularMomentum = this.bodyMass * this.bodyVelocity * this.semiMajorAxis
         this.specificAngularMomentum = this.angularMomentum / this.bodyMass
@@ -500,18 +501,19 @@ class Planet {
     updateTemperature(distance) {
         this.bodyCurrTemp = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), distance)
     }
-    updateLocation() { //Major Rework for elipses
-        this.displayRadius = this.bodySemiMajorAxisAU * displayLevel * (unrealFactor/5) //500 is the 'unreal' factor
-        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))
-        this.displayYRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyYOrbitJourney))
+    updateLocation() { //Major Rework for elipses STUDY true anomaly
+        // this.displayRadius = this.bodySemiMajorAxisAU * displayLevel * (unrealFactor/5) //500 is the 'unreal' factor
+        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney)) //replace bodyXOrbitJourney with True anomaly
+        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney)) //replace bodyXOrbitJourney with True anomaly
+        //this.displayYRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyYOrbitJourney))
         this.currBodyDistance = (((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))))
+        // this.currBodyDistance = Math.sqrt((this.bodyXLocation-500)**2 + (this.bodyYLocation - 500)**2) * AU
         this.currBodySpeed = ((Math.sqrt(this.sGP * ((2/this.currBodyDistance)-(1/this.bodySemiMajorAxisAU))))/unrealFactor) * timePeriod / (unrealFactor/5)
-        this.bodyXOrbitJourney += this.currBodySpeed / AU 
-        this.bodyYOrbitJourney += this.currBodySpeed / AU
-        this.bodyXLocation = Math.cos(this.bodyXOrbitJourney) * ((this.displayXRadius * unrealFactor)) * displayLevel + this.offset
-        this.bodyYLocation = Math.sin(this.bodyYOrbitJourney) * ((this.displayYRadius * unrealFactor)) * displayLevel + this.offset
-        
-        
+        this.bodyXOrbitJourney += this.currBodySpeed / AU
+        // this.bodyYOrbitJourney += this.currBodySpeed / AU
+        this.bodyXLocation = (this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney) / AU) * unrealFactor * displayLevel + this.offset //issue is here. Try and find out why it is mirrored on return
+        this.bodyYLocation = (this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor * displayLevel + this.offset //and here
+        // this.meanAnomaly = (2 * Math.PI * this.timeAdvance)/(this.bodySemiMajorAxis**(3/2)) 
         this.bodyLocations.shift(0)
         this.bodyLocations.push([this.bodyXLocation, this.bodyYLocation])
         this.updateTemperature(this.currBodyDistance * AU)
@@ -561,7 +563,7 @@ class Planet {
             ctx.moveTo(x, y)
             ctx.fillStyle = this.planetColor
             this.radius = this.bodyDisplayRadius
-            ctx.arc(x, y, 1, 0, 2 * Math.PI)
+            ctx.arc(x, y, 0.5, 0, 2 * Math.PI)
             ctx.strokeStyle = this.planetColor
             ctx.fill()
             ctx.stroke()
@@ -665,6 +667,6 @@ update()
 //testing math here.
 
 
-// createNBodies(1000, star)
+createNBodies(15, star)
 
 //notes: Time to update temperature every update frame
