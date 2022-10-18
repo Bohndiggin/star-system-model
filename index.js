@@ -511,8 +511,8 @@ class Planet {
         this.currBodySpeed = ((Math.sqrt(this.sGP * ((2/this.currBodyDistance)-(1/this.bodySemiMajorAxisAU))))/unrealFactor) * timePeriod / (unrealFactor/5)
         this.bodyXOrbitJourney += this.currBodySpeed / AU
         // this.bodyYOrbitJourney += this.currBodySpeed / AU
-        this.bodyXLocation = (this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney) / AU) * unrealFactor * displayLevel + this.offset //issue is here. Try and find out why it is mirrored on return
-        this.bodyYLocation = (this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor * displayLevel + this.offset //and here
+        this.bodyXLocation = ((((this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney) - this.bodySemiMinorAxis) / AU) * unrealFactor) * (zoomLevel/unrealFactor**2)) + this.offset //issue is here. Try and find out why it is mirrored on return
+        this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * (zoomLevel/unrealFactor**2)) + this.offset //and here
         // this.meanAnomaly = (2 * Math.PI * this.timeAdvance)/(this.bodySemiMajorAxis**(3/2)) 
         this.bodyLocations.shift(0)
         this.bodyLocations.push([this.bodyXLocation, this.bodyYLocation])
