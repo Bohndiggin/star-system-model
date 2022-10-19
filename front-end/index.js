@@ -184,10 +184,6 @@ function calcStarLuminosity(starTemp) { //values must be relative to the sun. YO
     return ans
 }
 
-// function calcP(mass1, mass2, specificAngularMomentum) { //CANCER MATH. May need later
-//     return Math.pow(specificAngularMomentum, 2) / makeSGP(mass1, mass2)
-// }
-
 
 function calcHabitableZone(starTemp, starRadius) { //calculate to be between 175K and 300K FIXED!!
     let max =  1 / (Math.pow(175 / starTemp / Math.pow(0.7, 1 / 4), 2) * 2 / starRadius)
@@ -336,11 +332,6 @@ function clickPresentStar(event) {
     star.showStarStats()
 }
 
-function bonk() {
-    let randomPlanet = jsBodies[Math.floor(ranDumb(0, jsBodies.length))]
-    randomPlanet.changeOrbitSMA(100)
-}
-
 bonkBtn.addEventListener('click', bonk)
 
 class Star {
@@ -354,6 +345,8 @@ class Star {
             }
         }
         this.starRadius = calcStarRadius(this.starMass)
+        this.starKmRadius = this.starRadius * solarRadius
+        this.starKgMass = this.starMass * solarMass
         this.starLuminosity = calcStarLuminosity(this.temperature)
         this.starClass = classifyStar(this.temperature)
         this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
@@ -428,23 +421,22 @@ class Planet {
         this.bodyComposition = calcIceBlast(this)
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
-        this.sGP = makeSGP(this.bodyMass, (this.starOrbiting.starMass * solarMass))
+        this.sGP = makeSGP(this.bodyMass, (this.starOrbiting.starKgMass))
         let minDistance = (.005 * AU) * (starObj.temperature/solarTemp)
         let maxDistance = (7 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
         this.bodySemiMinorAxis = this.bodySemiMajorAxis * Math.sqrt(1 - this.eccentricity**2)
-        this.bodyVelocity = calcOrbitalSpeedKmps(this.bodyMass, this.starOrbiting.starMass * solarMass, this.bodySemiMajorAxis)
+        this.bodyVelocity = calcOrbitalSpeedKmps(this.bodyMass, this.starOrbiting.starKgMass, this.bodySemiMajorAxis)
         this.angularMomentum = this.bodyMass * this.bodyVelocity * this.semiMajorAxis
         this.specificAngularMomentum = this.angularMomentum / this.bodyMass
         this.bodyRotationPeriod = "wizard MATH"
-        this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starMass * solarMass), this.bodySemiMajorAxis)
-        this.bodyTemperature = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), this.bodySemiMajorAxis)
+        this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starKgMass), this.bodySemiMajorAxis)
+        this.bodyTemperature = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starKmRadius), this.bodySemiMajorAxis)
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
         this.bodyParameter = ((this.specificAngularMomentum ** 2) / this.sGP)
-        //this section 'bonks' the orbit to be eccentric
         this.bodyPeriapsis = this.bodyParameter / (1 - this.eccentricity**2)
         this.bodyApoapsis = this.bodyParameter / (1 - this.eccentricity**2)
         this.bodyF = this.bodySemiMajorAxis * this.eccentricity
@@ -475,27 +467,14 @@ class Planet {
         this.cease = false
         this.bodyRadiusEarth = this.bodyRadius/earthRadius
         this.bodyLocations = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
-        // this.eccentricity = 0.7
-        // this.timer = setInterval(frame, 5, this)
-        ctx.beginPath()
-        ctx.fillStyle = this.planetColor
-        ctx.arc(this.bodyXLocation, this.bodyYLocation, this.bodyDisplayRadius, 0, 2 * Math.PI)
-        ctx.fill()
-        this.currBodySpeed = this.orbitalSpeed * timePeriod
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
         this.grd = ctx.createRadialGradient(75, 50, 5, 90, 60, 100);
         this.grd.addColorStop(0, 'white');
         this.grd.addColorStop(1, this.planetColor);
         planetNumber++
     }
-    orbitSet() {
-        this.orbitalSpeed = (365/this.bodyOrbitalPeriod) * timePeriod
-        this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
-        this.displayRadius = (this.bodySemiMajorAxisAU * displayLevel)
-        this.orbitRestart()
-    }
     updateTemperature(distance) {
-        this.bodyCurrTemp = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), distance)
+        this.bodyCurrTemp = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starKmRadius), distance)
     }
     updateLocation() { //Major Rework for elipses STUDY true anomaly
         this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney)) //replace bodyXOrbitJourney with True anomaly
@@ -534,18 +513,7 @@ class Planet {
             panel.innerHTML = stats
         }
     }
-    changeOrbitSMA(newSMA) {
-        this.bodySemiMajorAxis = newSMA
-        this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
-        this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starMass * solarMass), this.bodySemiMajorAxis)
-        this.orbitSet()
-        this.bodyTemperature = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), newSMA)
-        this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
-        this.bodyComposition = calcIceBlast(this)
-    }
     redraw() { // ADD If selected, it has an outer glow ALSO ADD THE PICS TO THE DIVS
-        // let x = this.bodyXLocation
-        // let y = this.bodyYLocation
         this.bodyDisplayRadius = this.bodyRadius * (earthRadius/solarRadius) * displayLevel
         for (let i = 0; i < this.bodyLocations.length; i++){
             let x = this.bodyLocations[i][0]
@@ -599,6 +567,7 @@ function createNBodies(bodyNum, starObj) {
     }
     return newBodies
 }
+
 function redraw(obj) {
     ctx.beginPath()
     ctx.fillStyle = obj.planetColor
@@ -648,7 +617,7 @@ rvBtn.addEventListener('click', slowReverse)
 canvas.addEventListener('click', zoomIn)
 
 function bench() {
-    createNBodies(1000, star)
+    createNBodies(100, star)
 }
 
 benchBtn.addEventListener('click', bench)
