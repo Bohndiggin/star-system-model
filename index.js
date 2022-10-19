@@ -498,18 +498,12 @@ class Planet {
         this.bodyCurrTemp = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starRadius * solarRadius), distance)
     }
     updateLocation() { //Major Rework for elipses STUDY true anomaly
-        // this.displayRadius = this.bodySemiMajorAxisAU * displayLevel * (unrealFactor/5) //500 is the 'unreal' factor
         this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney)) //replace bodyXOrbitJourney with True anomaly
-        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney)) //replace bodyXOrbitJourney with True anomaly
-        //this.displayYRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyYOrbitJourney))
         this.currBodyDistance = (((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))))
-        // this.currBodyDistance = Math.sqrt((this.bodyXLocation-500)**2 + (this.bodyYLocation - 500)**2) * AU
         this.currBodySpeed = ((Math.sqrt(this.sGP * ((2/this.currBodyDistance)-(1/this.bodySemiMajorAxisAU))))/unrealFactor) * timePeriod / (unrealFactor/5)
         this.bodyXOrbitJourney += this.currBodySpeed / AU
-        // this.bodyYOrbitJourney += this.currBodySpeed / AU
-        this.bodyXLocation = ((((this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney)- this.bodyF) / AU) * unrealFactor) * displayLevel) + this.offset //issue is here. Try and find out why it is mirrored on return
-        this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * displayLevel) + this.offset //and here
-        // this.meanAnomaly = (2 * Math.PI * this.timeAdvance)/(this.bodySemiMajorAxis**(3/2)) 
+        this.bodyXLocation = ((((this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney)- this.bodyF) / AU) * unrealFactor) * displayLevel) + this.offset
+        this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * displayLevel) + this.offset
         this.bodyLocations.shift(0)
         this.bodyLocations.push([this.bodyXLocation, this.bodyYLocation])
         this.updateTemperature(this.currBodyDistance * AU)
@@ -533,6 +527,7 @@ class Planet {
             <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
             <p>Apoapsis: ${this.bodyApoapsis}</p>
             <p>Periapsis: ${this.bodyPeriapsis}</p>
+            <p>CUR ECC: ${this.eccentricity}</p>
             <p>CUR DIST: ${Math.floor(this.currBodyDistance * AU)}</p>
             <p>CURR TEMP: ${Math.floor(this.bodyCurrTemp)}</p>
             <p>CURR SPD: ${Math.floor(this.currBodySpeed)}</p>`
