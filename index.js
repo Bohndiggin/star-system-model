@@ -421,7 +421,7 @@ class Star {
 class Planet {
     constructor (starObj) {
         this.starOrbiting = starObj
-        this.eccentricity = 0.7
+        this.eccentricity = ranDumb(0.001, 0.999)
         this.bodyRadius = ranDumb(600, 9999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         this.bodyComposition = clacBodyComposition()
         //this.bodyType = calcBodyTypeSecondPass()
@@ -430,7 +430,7 @@ class Planet {
         this.bodyEarthMasses = this.bodyMass / earthMass
         this.sGP = makeSGP(this.bodyMass, (this.starOrbiting.starMass * solarMass))
         let minDistance = (.005 * AU) * (starObj.temperature/solarTemp)
-        let maxDistance = (10 * AU) * (starObj.temperature/solarTemp)
+        let maxDistance = (7 * AU) * (starObj.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
         this.bodySemiMinorAxis = this.bodySemiMajorAxis * Math.sqrt(1 - this.eccentricity**2)
@@ -447,6 +447,7 @@ class Planet {
         //this section 'bonks' the orbit to be eccentric
         this.bodyPeriapsis = this.bodyParameter / (1 - this.eccentricity**2)
         this.bodyApoapsis = this.bodyParameter / (1 - this.eccentricity**2)
+        this.bodyF = this.bodySemiMajorAxis * this.eccentricity
         this.bodyOrbitalPeriod = 2 * Math.PI * Math.sqrt(this.bodySemiMajorAxis**3 / this.sGP)
         this.bodyMoons = 0
         this.bodyRings = 0
@@ -457,11 +458,6 @@ class Planet {
         this.bodyName = `planet${planetNumber}`
         this.planetX.setAttribute('id', this.bodyName)
         this.planetX.setAttribute('class', 'planet')
-        // this.centerPix = document.createElement('div')
-        // this.centerPix.setAttribute('id', `${this.bodyName}Pix`)
-        // this.centerPix.setAttribute('class', 'center-pix')
-        // this.centerPix.style.background = this.planetColor
-        // this.planetX.appendChild(this.centerPix)
         animationSection.appendChild(this.planetX)
         childrenMap[planetNumber+1].style.background = this.planetColor
         this.displayRadius = (this.bodySemiMajorAxisAU * displayLevel)
@@ -478,7 +474,7 @@ class Planet {
         this.bodyCurrTemp = 0
         this.cease = false
         this.bodyRadiusEarth = this.bodyRadius/earthRadius
-        this.bodyLocations = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+        this.bodyLocations = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
         // this.eccentricity = 0.7
         // this.timer = setInterval(frame, 5, this)
         ctx.beginPath()
@@ -511,8 +507,8 @@ class Planet {
         this.currBodySpeed = ((Math.sqrt(this.sGP * ((2/this.currBodyDistance)-(1/this.bodySemiMajorAxisAU))))/unrealFactor) * timePeriod / (unrealFactor/5)
         this.bodyXOrbitJourney += this.currBodySpeed / AU
         // this.bodyYOrbitJourney += this.currBodySpeed / AU
-        this.bodyXLocation = ((((this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney) - this.bodySemiMinorAxis) / AU) * unrealFactor) * (zoomLevel/unrealFactor**2)) + this.offset //issue is here. Try and find out why it is mirrored on return
-        this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * (zoomLevel/unrealFactor**2)) + this.offset //and here
+        this.bodyXLocation = ((((this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney)- this.bodyF) / AU) * unrealFactor) * displayLevel) + this.offset //issue is here. Try and find out why it is mirrored on return
+        this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * displayLevel) + this.offset //and here
         // this.meanAnomaly = (2 * Math.PI * this.timeAdvance)/(this.bodySemiMajorAxis**(3/2)) 
         this.bodyLocations.shift(0)
         this.bodyLocations.push([this.bodyXLocation, this.bodyYLocation])
