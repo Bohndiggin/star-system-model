@@ -381,7 +381,6 @@ class Star {
         <p>Habitable Zone (far): ${this.starHabitableZone[1]}</p>
         <p>Habitable Zone (near AU): ${this.starHabitableZone[0]/AU}</p>
         <p>Habitable Zone (far AU): ${this.starHabitableZone[1]/AU}</p>`
-        // let panel = document.getElementById('stat-display')
         panel.innerHTML = stats
     }
     redraw() {
@@ -458,7 +457,6 @@ class Planet {
         this.orbitalSpeed = (365/this.bodyOrbitalPeriod)
         this.timer = null
         this.planetHTML = document.getElementById(this.bodyName)
-        // clearInterval(this.timer)
         this.bodyXOrbitJourney = 0
         this.bodyYOrbitJourney = 0
         this.bodyXLocation = 500
