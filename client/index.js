@@ -334,6 +334,18 @@ function clickPresentStar(event) {
 
 bonkBtn.addEventListener('click', bonk)
 
+function calcStarColor(obj, temp) {
+    let send = {tempColor: temp}
+    axios.get(`http://localhost:5000/api/starColor`, send)
+        .then(res => {
+            console.log(res.data.starColor)
+            obj.starColor = res.data.starColor
+        })
+        .catch(err => {
+            console.log(err)
+        })
+}
+
 class Star {
     constructor () {
         let currentClass = ranDumb(1, 10000)/100
@@ -352,7 +364,7 @@ class Star {
         this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
         this.starDiv = document.getElementById('star')
         this.starDiv.addEventListener('click', clickPresentStar)
-        this.starColor = '#f0f8ff'
+        this.starColor = calcStarColor(this, this.temperature)
         this.starDisplayRadius = this.starRadius * (solarRadius / earthRadius) * displayLevel
         ctx.beginPath()
         let x = 500
@@ -427,7 +439,7 @@ class Planet {
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
         this.bodySemiMinorAxis = this.bodySemiMajorAxis * Math.sqrt(1 - this.eccentricity**2)
         this.bodyVelocity = calcOrbitalSpeedKmps(this.bodyMass, this.starOrbiting.starKgMass, this.bodySemiMajorAxis)
-        this.angularMomentum = this.bodyMass * this.bodyVelocity * this.semiMajorAxis
+        this.angularMomentum = this.bodyMass * this.bodyVelocity * this.bodySemiMajorAxis
         this.specificAngularMomentum = this.angularMomentum / this.bodyMass
         this.bodyRotationPeriod = "wizard MATH"
         this.bodyOrbitalPeriod = calcOrbitalPeriod(this.bodyMass, (this.starOrbiting.starKgMass), this.bodySemiMajorAxis)
@@ -436,8 +448,8 @@ class Planet {
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
         this.bodyParameter = ((this.specificAngularMomentum ** 2) / this.sGP)
-        this.bodyPeriapsis = this.bodyParameter / (1 - this.eccentricity**2)
-        this.bodyApoapsis = this.bodyParameter / (1 - this.eccentricity**2)
+        this.bodyPeriapsis = this.bodySemiMajorAxis * (1-this.eccentricity)
+        this.bodyApoapsis = this.bodySemiMajorAxis * (1+this.eccentricity)
         this.bodyF = this.bodySemiMajorAxis * this.eccentricity
         this.bodyOrbitalPeriod = 2 * Math.PI * Math.sqrt(this.bodySemiMajorAxis**3 / this.sGP)
         this.bodyMoons = 0
@@ -549,7 +561,6 @@ class Planet {
 }
 
 let star = new Star()
-console.log(star)
 
 function addPlanet() {
     createNBodies(1, star)
@@ -627,4 +638,4 @@ update()
 
 createNBodies(15, star)
 
-//notes: Time to update temperature every update frame
+//notes:
