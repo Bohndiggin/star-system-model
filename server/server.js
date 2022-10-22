@@ -8,7 +8,7 @@ app.use(express.json())
 
 const { calcStarColor } = require('./controller')
 
-app.get('/api/starColor', calcStarColor)
+app.post('/api/starColor', calcStarColor)
 
 const PORT = 5000
 

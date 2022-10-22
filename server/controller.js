@@ -1,3 +1,12 @@
+function rgbToHex (r, g, b) {
+    let rHex, gHex, bHex
+    
+    rHex = Math.floor(r).toString(16)
+    gHex = Math.floor(g).toString(16)
+    bHex = Math.floor(b).toString(16)
+    return rHex+gHex+bHex
+}
+
 module.exports = {
     calcStarColor: (req, res) => {
         let temp100 = req.body.tempColor
@@ -51,8 +60,16 @@ module.exports = {
                 }
             }
         }
-        let color = `rgb(${red}, ${green}, ${blue})`
-        let response = {starColor: color}
+        let colorRGB = `rgb(${red}, ${green}, ${blue})`
+        let colorHex = rgbToHex(red, green, blue)
+        let colorNum = `0x` + colorHex
+        console.log(colorNum)
+        console.log(colorNum)
+        let response = {
+            starColor: colorRGB,
+            starColorHex: "#" + colorHex,
+            starColorNum: colorNum
+        }
         res.status(200).send(response)
     }
 }

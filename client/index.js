@@ -346,7 +346,7 @@ bonkBtn.addEventListener('click', bonk)
 
 function calcStarColor(obj, temp) {
     let send = {tempColor: temp}
-    axios.get(`http://localhost:5000/api/starColor`, send)
+    axios.post(`http://localhost:5000/api/starColor`, send)
         .then(res => {
             console.log(res.data.starColor)
             obj.starColor = res.data.starColor
@@ -374,7 +374,19 @@ class Star {
         this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
         this.starDiv = document.getElementById('star')
         this.starDiv.addEventListener('click', clickPresentStar)
-        this.starColor = calcStarColor(this, this.temperature)
+        // this.calcStarColor = (temp) => {
+        //     let send = {tempColor: temp}
+        //     axios.post(`http://localhost:5000/api/starColor`, send)
+        //     .then(res => {
+        //         console.log(res.data)
+        //         return res.data
+        //     })
+        //     .catch(err => {
+        //         console.log(err)
+        //     })
+        // }
+        // this.starColor = this.calcStarColor(this.temperature)
+        this.starColor = 0xffffff
         this.starDisplayRadius = (this.starRadius * (solarRadius / earthRadius) * displayLevel)/unrealFactor
         this.hZRadiusClose = (this.starHabitableZone[0] / AU) * displayLevel * unrealFactor
         this.hZRadiusFar = (this.starHabitableZone[1] / AU) * displayLevel * unrealFactor
@@ -382,22 +394,23 @@ class Star {
         console.log(this.hZRadiusFar)
         this.display = new PIXI.Graphics()
         this.display.lineStyle(0)
-        this.display.beginFill(0xffffff)
+        this.display.beginFill(this.starColor)
         this.display.drawCircle(500, 500, this.starDisplayRadius)
         this.display.endFill()
         app.stage.addChild(this.display)
         this.displayHZFar = new PIXI.Graphics()
-        this.displayHZFar.lineStyle({lineWidth: 1, color: 0xffffff})
-        this.displayHZFar.beginFill({color: 0xffffff, alpha: 1})
+        this.displayHZFar.lineStyle(1, 0xffffff)
+        // this.displayHZFar.beginFill({color: 0xffffff, alpha: 1})
         this.displayHZFar.drawCircle(500, 500, this.hZRadiusFar)
         this.displayHZFar.endFill()
         app.stage.addChild(this.displayHZFar)
         this.displayHZClose = new PIXI.Graphics()
-        this.displayHZClose.lineStyle({lineWidth: 1, color: 0xffffff})
-        this.displayHZClose.beginFill({color: 0xffffff, alpha: 0})
+        this.displayHZClose.lineStyle(1, 0xffffff)
+        // this.displayHZClose.beginFill({color: 0xffffff, alpha: 0})
         this.displayHZClose.drawCircle(500, 500, this.hZRadiusClose)
         this.displayHZClose.endFill()
         app.stage.addChild(this.displayHZClose)
+        this.starDiv.style.backgroundColor = this.starColor
     }
     showStarStats() {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
@@ -479,8 +492,15 @@ class Planet {
         this.display.lineStyle(0)
         this.display.beginFill(this.planetColor.num)
         this.display.drawCircle(0, 0, this.bodyDisplayRadius)
+        this.display.interactive = true
+        this.display.buttonMode = true
         this.display.filters = [new PIXI.filters.GlowFilter({distance: 10, outerStrength: 0})]
         this.display.endFill()
+        this.display.on('pointerdown', onDragStart)
+        // this.display.on('pointerdown', clickPresent)
+        this.display.on('pointerup', onDragEnd)
+        this.display.on('pointerupoutside', onDragEnd)
+        this.display.on('pointermove', onDragMove)
         app.stage.addChild(this.display)
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
         planetNumber++
@@ -497,8 +517,10 @@ class Planet {
         this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * displayLevel) + this.offset
         this.bodyLocations.shift(0)
         this.bodyLocations.push([this.bodyXLocation, this.bodyYLocation])
-        this.display.position.x = this.bodyXLocation
-        this.display.position.y = this.bodyYLocation
+        if(!this.dragging) {
+            this.display.position.x = this.bodyXLocation
+            this.display.position.y = this.bodyYLocation
+        }
         this.updateTemperature(this.currBodyDistance * AU)
         this.presentInfo()
     }
@@ -543,6 +565,26 @@ function addPlanet() {
 }
 
 planetGenButton.addEventListener('click', addPlanet)
+
+function onDragStart(event) {
+    this.data = event.data
+    this.alpha = 0.5
+    this.dragging = true
+}
+
+function onDragEnd() {
+    this.alpha = 1;
+    this.dragging = false;
+    this.data = null;
+}
+
+function onDragMove() {
+    if (this.dragging) {
+        const newPosition = this.data.getLocalPosition(this.parent);
+        this.x = newPosition.x;
+        this.y = newPosition.y;
+    }
+}
 
 function createNBodies(bodyNum, starObj) {
     let newBodies = []
