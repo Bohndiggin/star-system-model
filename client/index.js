@@ -32,8 +32,6 @@ const marsTemp = 213.15
 let planetNumber = 0
 let jsBodies = []
 let displayElement = document.querySelector('display')
-let planetBoxEle = document.getElementById('planetBox')
-let childrenplanets = planetBoxEle.children
 let planetGenButton = document.getElementById('addPlanet')
 let listButton = document.getElementById('listPlanets')
 let bonkBtn = document.getElementById('bonk')
@@ -52,8 +50,18 @@ let rowMap = document.getElementById('row-map')
 let childrenMap = rowMap.children
 let unrealFactor = 500
 
-let canvas = document.getElementById('planetBox')
-let ctx = canvas.getContext('2d')
+
+const app = new PIXI.Application ( {
+    width: 1000,
+    height: 1000,
+    antialias: true
+})
+// app.stage.interactive = true
+
+let starView = document.getElementById('newCanvas')
+
+starView.appendChild(app.view)
+
 
 //max temp, min temp, class name, max mass, min mass, max radius, min radius, max solarlumens, low solarlumens, % of stars
 class StarTypes{
@@ -130,11 +138,14 @@ function ranDumb(min, max) { //makes random numbers in the range specified
 
 function getRandomColor() {
     var letters = '0123456789ABCDEF';
-    var color = '#';
+    var colors = {num: '0x', hex: '#'};
     for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
+        let selected = letters[Math.floor(Math.random() * 16)]
+      colors.num += selected
+      colors.hex += selected
     }
-    return color;
+    colors.num = +colors.num
+    return colors;
   }  
 
 
@@ -172,7 +183,7 @@ function calcGravitationalForce(mass1, mass2, distance) { //Not sure if this is 
 }
 
 // function update() {
-//     //runs everything. Moves planets. Oh wait. I only need to find the speed once. Then the updater only needs to be fed speeds once
+//     //runs everyviewPort. Moves planets. Oh wait. I only need to find the speed once. Then the updater only needs to be fed speeds once
 // }
 
 function calcStarRadius(mass) { //I looked up how much mass effects radius. Here you go.
@@ -328,7 +339,6 @@ function clickPresent(obj) {
 }
 
 function clickPresentStar(event) {
-    console.log(event)
     star.showStarStats()
 }
 
@@ -365,17 +375,29 @@ class Star {
         this.starDiv = document.getElementById('star')
         this.starDiv.addEventListener('click', clickPresentStar)
         this.starColor = calcStarColor(this, this.temperature)
-        this.starDisplayRadius = this.starRadius * (solarRadius / earthRadius) * displayLevel
-        ctx.beginPath()
-        let x = 500
-        let y = 500
-        ctx.moveTo(x, y)
-        ctx.fillStyle = this.starColor
-        ctx.arc(x, y, this.starDisplayRadius * 10, 0, 2 * Math.PI)
-        ctx.strokeStyle = this.starColor
-        ctx.fill()
-        ctx.stroke()
-
+        this.starDisplayRadius = (this.starRadius * (solarRadius / earthRadius) * displayLevel)/unrealFactor
+        this.hZRadiusClose = (this.starHabitableZone[0] / AU) * displayLevel * unrealFactor
+        this.hZRadiusFar = (this.starHabitableZone[1] / AU) * displayLevel * unrealFactor
+        console.log(this.hZRadiusClose)
+        console.log(this.hZRadiusFar)
+        this.display = new PIXI.Graphics()
+        this.display.lineStyle(0)
+        this.display.beginFill(0xffffff)
+        this.display.drawCircle(500, 500, this.starDisplayRadius)
+        this.display.endFill()
+        app.stage.addChild(this.display)
+        this.displayHZFar = new PIXI.Graphics()
+        this.displayHZFar.lineStyle({lineWidth: 1, color: 0xffffff})
+        this.displayHZFar.beginFill({color: 0xffffff, alpha: 1})
+        this.displayHZFar.drawCircle(500, 500, this.hZRadiusFar)
+        this.displayHZFar.endFill()
+        app.stage.addChild(this.displayHZFar)
+        this.displayHZClose = new PIXI.Graphics()
+        this.displayHZClose.lineStyle({lineWidth: 1, color: 0xffffff})
+        this.displayHZClose.beginFill({color: 0xffffff, alpha: 0})
+        this.displayHZClose.drawCircle(500, 500, this.hZRadiusClose)
+        this.displayHZClose.endFill()
+        app.stage.addChild(this.displayHZClose)
     }
     showStarStats() {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
@@ -395,32 +417,8 @@ class Star {
         <p>Habitable Zone (far AU): ${this.starHabitableZone[1]/AU}</p>`
         panel.innerHTML = stats
     }
-    redraw() {
-        this.hZRadiusClose = (this.starHabitableZone[0] / AU) * displayLevel
-        this.hZRadiusFar = (this.starHabitableZone[1] / AU) * displayLevel
-        this.starDisplayRadius = (this.starRadius * (solarRadius / earthRadius) * displayLevel) / unrealFactor
-        let x = 500
-        let y = 500
-        ctx.beginPath()
-        ctx.moveTo(x, y)
-        ctx.fillStyle = this.starColor
-        ctx.arc(x, y, this.starDisplayRadius * 10, 0, 2 * Math.PI)
-        ctx.strokeStyle = this.starColor
-        ctx.fill()
-        ctx.stroke()
-        ctx.beginPath()
-        ctx.moveTo(x, y)
-        ctx.arc(x, y, this.hZRadiusClose * unrealFactor, 0, 2 * Math.PI)
-        ctx.strokeStyle = 'white'
-        ctx.stroke()
-        ctx.beginPath()
-        ctx.moveTo(x, y)
-        ctx.strokeStyle = 'white'
-        ctx.arc(x, y, this.hZRadiusFar * unrealFactor, 0, 2 * Math.PI)
-        ctx.stroke()
-    }
-
 }
+
 
 class Planet {
     constructor (starObj) {
@@ -462,7 +460,7 @@ class Planet {
         this.planetX.setAttribute('id', this.bodyName)
         this.planetX.setAttribute('class', 'planet')
         animationSection.appendChild(this.planetX)
-        childrenMap[planetNumber+1].style.background = this.planetColor
+        childrenMap[planetNumber+1].style.background = this.planetColor.hex
         this.displayRadius = (this.bodySemiMajorAxisAU * displayLevel)
         this.bodyDisplayRadius = this.bodyRadius * (earthRadius/solarRadius) * displayLevel
         this.offset = 500
@@ -477,10 +475,14 @@ class Planet {
         this.cease = false
         this.bodyRadiusEarth = this.bodyRadius/earthRadius
         this.bodyLocations = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+        this.display = new PIXI.Graphics()
+        this.display.lineStyle(0)
+        this.display.beginFill(this.planetColor.num)
+        this.display.drawCircle(0, 0, this.bodyDisplayRadius)
+        this.display.filters = [new PIXI.filters.GlowFilter({distance: 10, outerStrength: 0})]
+        this.display.endFill()
+        app.stage.addChild(this.display)
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
-        this.grd = ctx.createRadialGradient(75, 50, 5, 90, 60, 100);
-        this.grd.addColorStop(0, 'white');
-        this.grd.addColorStop(1, this.planetColor);
         planetNumber++
     }
     updateTemperature(distance) {
@@ -495,6 +497,8 @@ class Planet {
         this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * displayLevel) + this.offset
         this.bodyLocations.shift(0)
         this.bodyLocations.push([this.bodyXLocation, this.bodyYLocation])
+        this.display.position.x = this.bodyXLocation
+        this.display.position.y = this.bodyYLocation
         this.updateTemperature(this.currBodyDistance * AU)
         this.presentInfo()
     }
@@ -523,41 +527,13 @@ class Planet {
             panel.innerHTML = stats
         }
     }
-    redraw() { // ADD If selected, it has an outer glow ALSO ADD THE PICS TO THE DIVS
-        this.bodyDisplayRadius = this.bodyRadius * (earthRadius/solarRadius) * displayLevel
-        for (let i = 0; i < this.bodyLocations.length; i++){
-            let x = this.bodyLocations[i][0]
-            let y = this.bodyLocations[i][1]
-            ctx.beginPath()
-            ctx.moveTo(x, y)
-            ctx.fillStyle = this.planetColor
-            this.radius = this.bodyDisplayRadius
-            ctx.arc(x, y, 0.5, 0, 2 * Math.PI)
-            ctx.strokeStyle = this.planetColor
-            ctx.fill()
-            ctx.stroke()
-        }
-        let x = this.bodyLocations[this.bodyLocations.length - 1][0]
-        let y = this.bodyLocations[this.bodyLocations.length - 1][1]
-        ctx.beginPath()
-        ctx.moveTo(x, y)
-        ctx.fillStyle = this.planetColor
-        this.radius = this.bodyDisplayRadius
-        ctx.arc(x, y, this.bodyDisplayRadius, 0, 2 * Math.PI)
-        ctx.strokeStyle = this.planetColor
-        ctx.fill()
-        ctx.stroke()
+    update() {
         if(this.selected) {
-            let x = this.bodyLocations[this.bodyLocations.length - 1][0]
-            let y = this.bodyLocations[this.bodyLocations.length - 1][1]
-            ctx.beginPath()
-            ctx.moveTo(x, y)
-            ctx.arc(x, y, this.bodyDisplayRadius + 5, 0, 2 * Math.PI)
-            ctx.strokeStyle = this.grd
-            ctx.stroke()
+            this.display.filters[0].outerStrength = 5
+        } else {
+            this.display.filters[0].outerStrength = 0
         }
     }
-
 }
 
 let star = new Star()
@@ -577,32 +553,18 @@ function createNBodies(bodyNum, starObj) {
     return newBodies
 }
 
-function redraw(obj) {
-    ctx.beginPath()
-    ctx.fillStyle = obj.planetColor
-    let x = (obj.bodyXLocation)
-    let y = (obj.bodyYLocation)
-    ctx.moveTo(x, y)
-    ctx.arc(x, y, 10, 0, 2 * Math.PI)
-    ctx.strokeStyle = obj.planetColor
-    ctx.fill()
-}
-
 function update() {
     let timer = null
     timer = setInterval(frame, 5)
     function frame() {
-        // ctx.moveTo(0, 0)
-        ctx.clearRect(0, 0, 1000, 1000)
         for(let i = 0;i<jsBodies.length;i++) {
             if(jsBodies[i].bodyXPosition === 1) {
                 clearInterval(timer)
             } else { 
                     jsBodies[i].updateLocation()
-                    jsBodies[i].redraw()
+                    jsBodies[i].update()
             }
         }
-        star.redraw()
     }
 }
 
@@ -623,10 +585,10 @@ function slowReverse() {
 
 rvBtn.addEventListener('click', slowReverse)
 
-canvas.addEventListener('click', zoomIn)
+
 
 function bench() {
-    createNBodies(100, star)
+    createNBodies(1000, star)
 }
 
 benchBtn.addEventListener('click', bench)
@@ -636,6 +598,7 @@ update()
 //testing math here.
 
 
-createNBodies(15, star)
 
+createNBodies(15, star)
+app.start()
 //notes:

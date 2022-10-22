@@ -21,8 +21,7 @@
         <input type="button" value="Bench" id="bench">
     </nav>
     <section class="display">
-        <canvas id="planetBox" width="1000px" height="1000px">
-        </canvas>
+        <section id="newCanvas"></section>
         <aside id="stat-display">
         </aside>
     </section>
@@ -31,6 +30,8 @@
     </section>
 </body>
 <footer>
+    <script src="https://unpkg.com/pixi.js@6.x/dist/browser/pixi.min.js"></script>
+    <script src="./pixi-filters.js"></script>
     <script src="../node_modules/axios/dist/axios.min.js"></script>
     <script src="index.js"></script>
 </footer>
