@@ -554,6 +554,13 @@ class Planet {
                 <p>CURR SPD: ${Math.floor(this.currBodySpeed)}</p>`
                 panel.innerHTML = stats
             } else {
+                let eccInput, eccSlider = null
+                let editable = [
+                    {
+                        slider: {var: eccSlider, str: 'eccentricity-slider'},
+                        input: {var: eccInput, str: 'ecc-input'}
+                    },
+                ]
                 let stats = `<h2 id="planetInfo">Planet Info</h2>
                 <h3 id="planetName">Name: ${this.bodyName}</h3>
                 <p id="planet type">Type: ${this.bodyType}</p>
@@ -573,18 +580,20 @@ class Planet {
                 <p>CUR ECC: ${this.eccentricity}</p>
                 <input type="range" name="eccentricity" id="eccentricity-slider" min="0.001" max="0.999" value="${this.eccentricity}" step="0.001">
                 <label for="eccentricity">eccentricity</label>
-                <input type="text" id="eccInput" name="eccentricity" min="0.001" max="0.999" placeholder="${this.eccentricity}">
+                <input type="text" id="ecc-input" name="eccentricity" min="0.001" max="0.999" placeholder="${this.eccentricity}">
                 <p>CUR DIST: ${Math.floor(this.currBodyDistance * AU)}</p>
                 <p>CURR TEMP: ${Math.floor(this.bodyCurrTemp)}</p>
                 <p>CURR SPD: ${Math.floor(this.currBodySpeed)}</p>
                 <label for="submit-changes">Submit Changes:</label>
                 <input type="button" value="Submit" id="submitChange" name="submit-changes">`
                 panel.innerHTML = stats
-                let slider = document.getElementById('eccentricity-slider')
-                let eccInput = document.getElementById('eccInput')
-                eccInput.innerHTML = slider.value
-                slider.oninput = () => {
-                    eccInput.value = slider.value
+                for (let i = 0; i < editable.length; i++) { //takes the array of editable and makes sliders for each variable in it
+                    editable[i].slider.var = document.getElementById(editable[i].slider.str)
+                    editable[i].input.var = document.getElementById(editable[i].input.str)
+                    editable[i].input.var.innerHTML = editable[i].slider.var.value
+                    editable[i].slider.var.oninput = () => {
+                        editable[i].input.var.value = editable[i].slider.var.value
+                    }
                 }
                 let editSendBtn = document.getElementById('submitChange')
                 editSendBtn.addEventListener('click', this.bodyEdit)
@@ -599,7 +608,9 @@ class Planet {
         }
     }
     bodyEdit() { //how to account for the various ways they can be changed?
-        
+        //step 1. Compare 'this' to new values 
+        //step 2. gather changes and send 'this' and changed
+        //step 3. determine what needs to change on the back end.
     }
 }
 
