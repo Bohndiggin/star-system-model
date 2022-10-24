@@ -39,6 +39,8 @@ let ffBtn = document.getElementById('ff')
 let rvBtn = document.getElementById('rv')
 let benchBtn = document.getElementById('bench')
 let panel = document.getElementById('stat-display')
+let editBtn = document.getElementById('edit')
+let editStpBtn = document.getElementById('editStop')
 
 let cease = false
 let timePeriod = 10
@@ -49,6 +51,7 @@ let stopBtn = document.getElementById('stop')
 let rowMap = document.getElementById('row-map')
 let childrenMap = rowMap.children
 let unrealFactor = 500
+let editMode = false
 
 
 const app = new PIXI.Application ( {
@@ -326,7 +329,7 @@ function clickPresent(obj) {
     let bodyCaught = null
     for (let i = 0; i < jsBodies.length; i++) {
         if (jsBodies[i].bodyName === obj.id) {
-            console.log(`found ${jsBodies[i].bodyName}`)
+            // console.log(`found ${jsBodies[i].bodyName}`)
             bodyCaught = jsBodies[i]
             break            
         } 
@@ -339,6 +342,9 @@ function clickPresent(obj) {
 }
 
 function clickPresentStar(event) {
+    for (let i = 0; i < jsBodies.length; i++) {
+        jsBodies[i].selected = false        
+    }
     star.showStarStats()
 }
 
@@ -478,7 +484,6 @@ class Planet {
         this.bodyDisplayRadius = this.bodyRadius * (earthRadius/solarRadius) * displayLevel
         this.offset = 500
         this.orbitalSpeed = (365/this.bodyOrbitalPeriod)
-        this.timer = null
         this.planetHTML = document.getElementById(this.bodyName)
         this.bodyXOrbitJourney = 0
         this.bodyYOrbitJourney = 0
@@ -508,8 +513,8 @@ class Planet {
     updateTemperature(distance) {
         this.bodyCurrTemp = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starKmRadius), distance)
     }
-    updateLocation() { //Major Rework for elipses STUDY true anomaly
-        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney)) //replace bodyXOrbitJourney with True anomaly
+    updateLocation() {
+        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))
         this.currBodyDistance = (((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))))
         this.currBodySpeed = ((Math.sqrt(this.sGP * ((2/this.currBodyDistance)-(1/this.bodySemiMajorAxisAU))))/unrealFactor) * timePeriod / (unrealFactor/5)
         this.bodyXOrbitJourney += this.currBodySpeed / AU
@@ -526,27 +531,64 @@ class Planet {
     }
     presentInfo () {
         if(this.selected) {
-            let stats = `<h2 id="planetInfo">Planet Info</h2>
-            <h3 id="planetName">Name: ${this.bodyName}</h3>
-            <p id="planet type">Type: ${this.bodyType}</p>
-            <h4 id="planetPhysicalInfo">Physical Info:</h4>
-            <p id="planetComposition">Composition: ${this.bodyComposition}</p>
-            <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
-            <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
-            <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>
-            <p id="planetMassEarths">Earth Masses: ${this.bodyMass/earthMass}</p>
-            <p id="planetG">Gravity: ${this.bodyGravity}</p>
-            <h4 id="orbitalInfo">Orbital Info:</h4>
-            <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
-            <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
-            <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
-            <p>Apoapsis: ${this.bodyApoapsis}</p>
-            <p>Periapsis: ${this.bodyPeriapsis}</p>
-            <p>CUR ECC: ${this.eccentricity}</p>
-            <p>CUR DIST: ${Math.floor(this.currBodyDistance * AU)}</p>
-            <p>CURR TEMP: ${Math.floor(this.bodyCurrTemp)}</p>
-            <p>CURR SPD: ${Math.floor(this.currBodySpeed)}</p>`
-            panel.innerHTML = stats
+            if(!editMode) {
+                let stats = `<h2 id="planetInfo">Planet Info</h2>
+                <h3 id="planetName">Name: ${this.bodyName}</h3>
+                <p id="planet type">Type: ${this.bodyType}</p>
+                <h4 id="planetPhysicalInfo">Physical Info:</h4>
+                <p id="planetComposition">Composition: ${this.bodyComposition}</p>
+                <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
+                <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
+                <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>
+                <p id="planetMassEarths">Earth Masses: ${this.bodyMass/earthMass}</p>
+                <p id="planetG">Gravity: ${this.bodyGravity}</p>
+                <h4 id="orbitalInfo">Orbital Info:</h4>
+                <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
+                <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
+                <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
+                <p>Apoapsis: ${this.bodyApoapsis}</p>
+                <p>Periapsis: ${this.bodyPeriapsis}</p>
+                <p>CUR ECC: ${this.eccentricity}</p>
+                <p>CUR DIST: ${Math.floor(this.currBodyDistance * AU)}</p>
+                <p>CURR TEMP: ${Math.floor(this.bodyCurrTemp)}</p>
+                <p>CURR SPD: ${Math.floor(this.currBodySpeed)}</p>`
+                panel.innerHTML = stats
+            } else {
+                let stats = `<h2 id="planetInfo">Planet Info</h2>
+                <h3 id="planetName">Name: ${this.bodyName}</h3>
+                <p id="planet type">Type: ${this.bodyType}</p>
+                <h4 id="planetPhysicalInfo">Physical Info:</h4>
+                <p id="planetComposition">Composition: ${this.bodyComposition}</p>
+                <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
+                <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
+                <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>
+                <p id="planetMassEarths">Earth Masses: ${this.bodyMass/earthMass}</p>
+                <p id="planetG">Gravity: ${this.bodyGravity}</p>
+                <h4 id="orbitalInfo">Orbital Info:</h4>
+                <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
+                <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
+                <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
+                <p>Apoapsis: ${this.bodyApoapsis}</p>
+                <p>Periapsis: ${this.bodyPeriapsis}</p>
+                <p>CUR ECC: ${this.eccentricity}</p>
+                <input type="range" name="eccentricity" id="eccentricity-slider" min="0.001" max="0.999" value="${this.eccentricity}" step="0.001">
+                <label for="eccentricity">eccentricity</label>
+                <input type="text" id="eccInput" name="eccentricity" min="0.001" max="0.999" placeholder="${this.eccentricity}">
+                <p>CUR DIST: ${Math.floor(this.currBodyDistance * AU)}</p>
+                <p>CURR TEMP: ${Math.floor(this.bodyCurrTemp)}</p>
+                <p>CURR SPD: ${Math.floor(this.currBodySpeed)}</p>
+                <label for="submit-changes">Submit Changes:</label>
+                <input type="button" value="Submit" id="submitChange" name="submit-changes">`
+                panel.innerHTML = stats
+                let slider = document.getElementById('eccentricity-slider')
+                let eccInput = document.getElementById('eccInput')
+                eccInput.innerHTML = slider.value
+                slider.oninput = () => {
+                    eccInput.value = slider.value
+                }
+                let editSendBtn = document.getElementById('submitChange')
+                editSendBtn.addEventListener('click', this.bodyEdit)
+            }
         }
     }
     update() {
@@ -555,6 +597,9 @@ class Planet {
         } else {
             this.display.filters[0].outerStrength = 0
         }
+    }
+    bodyEdit() { //how to account for the various ways they can be changed?
+        
     }
 }
 
@@ -602,9 +647,11 @@ function update() {
         for(let i = 0;i<jsBodies.length;i++) {
             if(jsBodies[i].bodyXPosition === 1) {
                 clearInterval(timer)
-            } else { 
-                    jsBodies[i].updateLocation()
-                    jsBodies[i].update()
+            } else  if (!editMode) { 
+                jsBodies[i].updateLocation()
+                jsBodies[i].update()
+            } else {
+                jsBodies[i].update()
             }
         }
     }
@@ -634,6 +681,26 @@ function bench() {
 }
 
 benchBtn.addEventListener('click', bench)
+
+function editModeStart() {
+    allStop()
+    editMode = true
+}
+
+editBtn.addEventListener('click', editModeStart)
+
+function editModeStop () { //collect changes and stop edit mode
+    editMode = false
+    for (let i = 0; i < jsBodies.length; i++) {
+        if(jsBodies[i].selected) {
+
+        }       
+    }
+    allGo()
+
+}
+
+editStpBtn.addEventListener('click', editModeStop)
 
 
 update()
