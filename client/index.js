@@ -53,6 +53,8 @@ let childrenMap = rowMap.children
 let unrealFactor = 500
 let editMode = false
 
+let localURL = 'http://localhost:5000'
+
 
 const app = new PIXI.Application ( {
     width: 1000,
@@ -396,8 +398,6 @@ class Star {
         this.starDisplayRadius = (this.starRadius * (solarRadius / earthRadius) * displayLevel)/unrealFactor
         this.hZRadiusClose = (this.starHabitableZone[0] / AU) * displayLevel * unrealFactor
         this.hZRadiusFar = (this.starHabitableZone[1] / AU) * displayLevel * unrealFactor
-        console.log(this.hZRadiusClose)
-        console.log(this.hZRadiusFar)
         this.display = new PIXI.Graphics()
         this.display.lineStyle(0)
         this.display.beginFill(this.starColor)
@@ -450,8 +450,8 @@ class Planet {
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
         this.sGP = makeSGP(this.bodyMass, (this.starOrbiting.starKgMass))
-        let minDistance = (.005 * AU) * (starObj.temperature/solarTemp)
-        let maxDistance = (7 * AU) * (starObj.temperature/solarTemp)
+        let minDistance = (.005 * AU) * (this.starOrbiting.temperature/solarTemp)
+        let maxDistance = (7 * AU) * (this.starOrbiting.temperature/solarTemp)
         this.bodySemiMajorAxis = ranDumb(minDistance, maxDistance)
         this.bodySemiMajorAxisAU = this.bodySemiMajorAxis / AU
         this.bodySemiMinorAxis = this.bodySemiMajorAxis * Math.sqrt(1 - this.eccentricity**2)
@@ -508,6 +508,7 @@ class Planet {
         this.display.on('pointermove', onDragMove)
         app.stage.addChild(this.display)
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
+        // axios.post(localURL + '/api/planetAdd', this).then().catch((err) => console.log('error on planet Gen: ' + err))
         planetNumber++
     }
     updateTemperature(distance) {
@@ -620,6 +621,13 @@ class Planet {
         //step 3. determine what needs to change on the back end.
         this.editable
         this
+        axios.post(localURL + '/api/edit', this)
+        .then((res) =>{
+            res.data
+        })
+        .catch((err) => {
+            console.log('bodyEdit had ' + err)
+        })
     }
 }
 

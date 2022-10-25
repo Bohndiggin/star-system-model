@@ -6,9 +6,11 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-const { calcStarColor } = require('./controller')
+const { calcStarColor, calcEdits, planetAdd } = require('./controller')
 
 app.post('/api/starColor', calcStarColor)
+app.post('/api/edit', calcEdits)
+app.post('api/planetAdd', planetAdd)
 
 const PORT = 5000
 

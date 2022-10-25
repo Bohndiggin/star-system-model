@@ -59,7 +59,7 @@ h1 {
     position: relative;
     border: 2px;
     border-style: solid;
-    height: 750px;
+    height: 950px;
     width: 500px;
     border-color: rgb(255, 157, 0);
     margin: 15px;
@@ -67,9 +67,9 @@ h1 {
     align-content: space-between;
     align-items: stretch;
 }
-#stat-display > h1, h2, h3, h4, p {
+#stat-display > h1, h2, h3, h4, p, input, button, label {
     align-content: space-between;
-    margin: 15px;
+    margin: 10px;
     font-family: sans-serif;
 }
 
@@ -84,6 +84,11 @@ h1 {
 }
 #stat-display > p {
     font: 1rem sans-serif;
+}
+
+#submitChange {
+    background-color: rgb(255, 157, 0);
+    margin: 5px;
 }
 
 

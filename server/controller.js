@@ -71,5 +71,12 @@ module.exports = {
             starColorNum: colorNum
         }
         res.status(200).send(response)
+    },
+    calcEdits: (req, res) => {
+        let edited = req.body.editable
+        let original = [req.body.bodySemiMajorAxisAU, req.body.eccentricity]
+    },
+    planetAdd: (req, res) => {
+        //SQLise
     }
 }
