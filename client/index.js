@@ -554,12 +554,16 @@ class Planet {
                 <p>CURR SPD: ${Math.floor(this.currBodySpeed)}</p>`
                 panel.innerHTML = stats
             } else {
-                let eccInput, eccSlider = null
-                let editable = [
+                let eccInput, eccSlider, smaSlider, smaInput = null
+                this.editable = [
                     {
                         slider: {var: eccSlider, str: 'eccentricity-slider'},
                         input: {var: eccInput, str: 'ecc-input'}
                     },
+                    {
+                        slider: {var:  smaSlider, str: 'sma-AU-slider'},
+                        input: {var: smaInput, str: 'sma-AU-input'}
+                    }
                 ]
                 let stats = `<h2 id="planetInfo">Planet Info</h2>
                 <h3 id="planetName">Name: ${this.bodyName}</h3>
@@ -574,6 +578,9 @@ class Planet {
                 <h4 id="orbitalInfo">Orbital Info:</h4>
                 <p id="semiMajorAxis">SemiMajorAxis: ${this.bodySemiMajorAxis}</p>
                 <p id="semiMajorAxisAU">SemiMajorAxisAU: ${this.bodySemiMajorAxisAU}</p>
+                <input type="range" name="semi-major-axis-AU" id="sma-AU-slider" min="0.001" max="10" value="${this.bodySemiMajorAxisAU}" step="0.1">
+                <label for="semi-major-axis-AU">semi-major-axis-AU</label>
+                <input type="text" id="sma-AU-input" name="semi-major-axis-AU" min="0.001" max="10" placeholder="${this.bodySemiMajorAxisAU}">
                 <p id="orbitalPeriod">Orbital Period (Earth Days): ${this.bodyOrbitalPeriod}</p>
                 <p>Apoapsis: ${this.bodyApoapsis}</p>
                 <p>Periapsis: ${this.bodyPeriapsis}</p>
@@ -587,12 +594,12 @@ class Planet {
                 <label for="submit-changes">Submit Changes:</label>
                 <input type="button" value="Submit" id="submitChange" name="submit-changes">`
                 panel.innerHTML = stats
-                for (let i = 0; i < editable.length; i++) { //takes the array of editable and makes sliders for each variable in it
-                    editable[i].slider.var = document.getElementById(editable[i].slider.str)
-                    editable[i].input.var = document.getElementById(editable[i].input.str)
-                    editable[i].input.var.innerHTML = editable[i].slider.var.value
-                    editable[i].slider.var.oninput = () => {
-                        editable[i].input.var.value = editable[i].slider.var.value
+                for (let i = 0; i < this.editable.length; i++) { //takes the array of editable and makes sliders for each variable in it
+                    this.editable[i].slider.var = document.getElementById(this.editable[i].slider.str)
+                    this.editable[i].input.var = document.getElementById(this.editable[i].input.str)
+                    this.editable[i].input.var.innerHTML = this.editable[i].slider.var.value
+                    this.editable[i].slider.var.oninput = () => {
+                        this.editable[i].input.var.value = this.editable[i].slider.var.value
                     }
                 }
                 let editSendBtn = document.getElementById('submitChange')
@@ -611,6 +618,8 @@ class Planet {
         //step 1. Compare 'this' to new values 
         //step 2. gather changes and send 'this' and changed
         //step 3. determine what needs to change on the back end.
+        this.editable
+        this
     }
 }
 
