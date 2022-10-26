@@ -1,6 +1,8 @@
 const express = require('express')
 const cors = require('cors')
 
+const Sequelize = require('sequelize')
+
 const app = express()
 
 app.use(cors())
