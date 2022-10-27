@@ -78,5 +78,8 @@ module.exports = {
     },
     planetAdd: (req, res) => {
         //SQLise
+    },
+    starAdd: (req, res) => {
+        //SQLise
     }
 }

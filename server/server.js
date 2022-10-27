@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+require('dotenv').config()
 
 const Sequelize = require('sequelize')
 
@@ -14,6 +15,6 @@ app.post('/api/starColor', calcStarColor)
 app.post('/api/edit', calcEdits)
 app.post('api/planetAdd', planetAdd)
 
-const PORT = 5000
+const PORT = process.env.SERVER_PORT
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`))
