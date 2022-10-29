@@ -53,7 +53,7 @@ let childrenMap = rowMap.children
 let unrealFactor = 500
 let editMode = false
 
-let localURL = 'http://localhost:5000'
+let localURL = 'http://localhost:4444'
 
 
 const app = new PIXI.Application ( {
@@ -121,7 +121,7 @@ const temperatureArrayIcy = [
     new PlanetTypes(100, 200, 'brisky'),
     new PlanetTypes(200, 275, 'frozen'),
     new PlanetTypes(275, 300, 'ocean'),
-    new PlanetTypes(300, kBoilingPoint, 'Hot Ocean')
+    new PlanetTypes(300, kBoilingPoint, 'Hot-Ocean')
 ]
 
 const temperatureArrayMetalic = [
@@ -234,29 +234,29 @@ function clacBodyComposition() { //randomly choose what the planet is made of.
 function calcBodyTypeFirstPass(temperature, size, composition) { //conditional logic to determine what kind of planet it is.
     let type = ""
     if(composition.ice > composition.rock && composition.ice > composition.metal) {
-        type += "icy "
+        type += "icy_"
     } else if (composition.rock > composition.ice && composition.rock > composition.metal) {
-        type += "rocky "
+        type += "rocky_"
     } else if (composition.metal > composition.ice && composition.metal > composition.rock) {
-        type += "metalic "
+        type += "metalic_"
     } else {
-        type += "It's Complicated "
+        type += "It's Complicated"
     }
-    if(type === "icy ") {
+    if(type === "icy_") {
         for(let i = 0;i<temperatureArrayIcy.length;i++) { //using some objects I will add stats to the planet. (mostly for the name of the planet.) WORK IN PROGRESS
             if(temperature > temperatureArrayIcy[i].minTemp && temperature < temperatureArrayIcy[i].maxTemp) {
                 type += temperatureArrayIcy[i].planetType
             }
         }
     }
-    if(type === "rocky ") {
+    if(type === "rocky_") {
         for(let i = 0;i<temperatureArrayRocky.length;i++) {
             if(temperature > temperatureArrayRocky[i].minTemp && temperature < temperatureArrayRocky[i].maxTemp) {
                 type += temperatureArrayRocky[i].planetType
             }
         }
     }
-    if(type === "metalic ") {
+    if(type === "metalic_") {
         for(let i = 0;i<temperatureArrayMetalic.length;i++) {
             if(temperature >= temperatureArrayMetalic[i].minTemp && temperature < temperatureArrayMetalic[i].maxTemp) {
                 type += temperatureArrayMetalic[i].planetType
@@ -417,6 +417,7 @@ class Star {
         this.displayHZClose.endFill()
         app.stage.addChild(this.displayHZClose)
         this.starDiv.style.backgroundColor = this.starColor
+        //axios.post(localURL + '/api/starAdd/)
     }
     showStarStats() {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
@@ -508,7 +509,35 @@ class Planet {
         this.display.on('pointermove', onDragMove)
         app.stage.addChild(this.display)
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
-        // axios.post(localURL + '/api/planetAdd', this).then().catch((err) => console.log('error on planet Gen: ' + err))
+        console.log(this.bodyName)
+        let staged = {
+            stagedSMA: this.bodySemiMajorAxis,
+            stagedSMAAU: this.bodySemiMajorAxisAU,
+            stagedName: this.bodyName,
+            stagedRadius: this.bodyRadius,
+            stagedEcc: this.eccentricity,
+            stagedTemp: this.bodyTemperature,
+            stagedType: this.bodyType
+        }
+        axios.get(localURL + '/api/starNumGet/') //gotta send the star over first and wait for it to process
+             .then(res => {
+                this.starOrbiting.starNum = res.data[0].count
+                staged.stagedStarNum = +res.data[0].count + 1
+                axios.post(localURL + '/api/planetAdd', staged)
+                    .then(res => {
+                        let pAndS = {
+                            s: staged.stagedStarNum,
+                            p: +res.data.id
+                        }
+                        axios.post(localURL + '/api/star-system', pAndS)
+                            .then(res => {
+                                console.log(res.data)
+                            })
+                            .catch(err => console.log(err))
+                    })
+                    .catch((err) => console.log('error on planet Gen: ' + err))
+            })
+            .catch(err => console.log('error' + err))
         planetNumber++
     }
     updateTemperature(distance) {
@@ -623,7 +652,7 @@ class Planet {
         this
         axios.post(localURL + '/api/edit', this)
         .then((res) =>{
-            res.data
+            console.log(res.data)
         })
         .catch((err) => {
             console.log('bodyEdit had ' + err)
@@ -665,6 +694,7 @@ function createNBodies(bodyNum, starObj) {
         newBodies.push(new Planet(starObj))
         jsBodies.push(newBodies[i])
     }
+    //axios send over the star data
     return newBodies
 }
 

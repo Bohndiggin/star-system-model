@@ -1,3 +1,14 @@
+const Sequelize = require('sequelize')
+require('dotenv')
+const sequelize = new Sequelize(process.env.CONNECTION_STRING, {
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: {
+            rejectUnauthorized: false
+        }
+    }
+  })
+
 function rgbToHex (r, g, b) {
     let rHex, gHex, bHex
     
@@ -76,10 +87,37 @@ module.exports = {
         let edited = req.body.editable
         let original = [req.body.bodySemiMajorAxisAU, req.body.eccentricity]
     },
-    planetAdd: (req, res) => {
-        //SQLise
+    planetAdd: (req, res) => { //write a query that finds out how many stars are in the db and assigns the planets to the right star.
+        // console.log(req.body)
+        let {stagedSMA, stagedSMAAU, stagedName, stagedRadius, stagedEcc, stagedTemp, stagedType, stagedStarNum} = req.body
+        sequelize.query(`
+        INSERT INTO planets(sma, smaAU, name, body_radius, body_ecc, body_temp, body_type)
+        VALUES (${stagedSMA}, ${stagedSMAAU}, '${stagedName}', ${stagedRadius}, ${stagedEcc}, ${stagedTemp}, '${stagedType}');
+        `)
+        .then(dbRes => {
+            res.status(200).send(dbRes[0])
+        })
+    },
+    starNumGet: (req, res) => {
+        sequelize.query(`
+            SELECT count(id) FROM stars
+        `)
+        .then(dbRes => {
+            console.log(dbRes[0])
+            res.status(200).send(dbRes[0])
+        })
     },
     starAdd: (req, res) => {
-        //SQLise
+
+    },
+    starAndPlanets: (req, res) => {
+        let {s, p} = req.body
+        sequelize.query(`
+            INSERT INTO stars_to_planets(star_id, planet_id)
+            VALUES (${s}, ${p})
+        `)
+        .then(dbRes => {
+            res.status(200).send(dbRes[0])
+        })
     }
 }
