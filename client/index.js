@@ -421,20 +421,20 @@ class Star {
     }
     showStarStats() {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
-        <p>Type: ${this.starClass}</pid=>
-        <h4>Physical Info:</h4>
-        <p>Composition: TODO</pid=>
-        <p>Temperature: ${this.temperature}</pid=>
-        <p>Size (Relative to Sol): ${this.starRadius}</p>
-        <p>Mass (relative to Sol): ${this.starMass}</p>
-        <p>Luminosity (relative to Sol): ${this.starLuminosity}</p>
-        <p>masstotal = TODO</p>
-        <p>Gravity: ${this.bodyGravity}</pid=>
-        <h4>Orbital Info:</h4>
-        <p>Habitable Zone (near): ${this.starHabitableZone[0]}</p>
-        <p>Habitable Zone (far): ${this.starHabitableZone[1]}</p>
-        <p>Habitable Zone (near AU): ${this.starHabitableZone[0]/AU}</p>
-        <p>Habitable Zone (far AU): ${this.starHabitableZone[1]/AU}</p>`
+            <p>Type: ${this.starClass}</pid=>
+            <h4>Physical Info:</h4>
+            <p>Composition: TODO</pid=>
+            <p>Temperature: ${this.temperature}</pid=>
+            <p>Size (Relative to Sol): ${this.starRadius}</p>
+            <p>Mass (relative to Sol): ${this.starMass}</p>
+            <p>Luminosity (relative to Sol): ${this.starLuminosity}</p>
+            <p>masstotal = TODO</p>
+            <p>Gravity: ${this.bodyGravity}</pid=>
+            <h4>Orbital Info:</h4>
+            <p>Habitable Zone (near): ${this.starHabitableZone[0]}</p>
+            <p>Habitable Zone (far): ${this.starHabitableZone[1]}</p>
+            <p>Habitable Zone (near AU): ${this.starHabitableZone[0]/AU}</p>
+            <p>Habitable Zone (far AU): ${this.starHabitableZone[1]/AU}</p>`
         panel.innerHTML = stats
     }
 }
@@ -522,7 +522,7 @@ class Planet {
         axios.get(localURL + '/api/starNumGet/') //gotta send the star over first and wait for it to process
              .then(res => {
                 this.starOrbiting.starNum = res.data[0].count
-                staged.stagedStarNum = +res.data[0].count + 1
+                staged.stagedStarNum = +res.data[0].count
                 axios.post(localURL + '/api/planetAdd', staged)
                     .then(res => {
                         let pAndS = {
