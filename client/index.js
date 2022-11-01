@@ -417,7 +417,19 @@ class Star {
         this.displayHZClose.endFill()
         app.stage.addChild(this.displayHZClose)
         this.starDiv.style.backgroundColor = this.starColor
-        //axios.post(localURL + '/api/starAdd/)
+        let sendStar = {
+            sendStarTemp: this.temperature,
+            sendStarRadius: this.starRadius,
+            sendStarMass: this.starMass,
+            sendStarLum: this.starLuminosity
+        }
+        axios.post(localURL + '/api/starAdd/', sendStar)
+            .then(res => {
+                console.log(res.data)
+            })
+            .catch(err => {
+                console.log(err)
+            })
     }
     showStarStats() {
         let stats = `<h2 id="planetInfo">Planet Info</h2>
@@ -527,11 +539,10 @@ class Planet {
                     .then(res => {
                         let pAndS = {
                             s: staged.stagedStarNum,
-                            p: +res.data.id
+                            p: +res.data[0].count
                         }
                         axios.post(localURL + '/api/star-system', pAndS)
                             .then(res => {
-                                console.log(res.data)
                             })
                             .catch(err => console.log(err))
                     })
@@ -649,8 +660,20 @@ class Planet {
         //step 2. gather changes and send 'this' and changed
         //step 3. determine what needs to change on the back end.
         this.editable
-        this
-        axios.post(localURL + '/api/edit', this)
+        let staged = {
+            stagedSMA: this.bodySemiMajorAxis,
+            stagedSMAAU: this.bodySemiMajorAxisAU,
+            stagedName: this.bodyName,
+            stagedRadius: this.bodyRadius,
+            stagedEcc: this.eccentricity,
+            stagedTemp: this.bodyTemperature,
+            stagedType: this.bodyType
+        }
+        let stagedAndChanges = {
+            curr: staged,
+            changes: this.editable
+        }
+        axios.post(localURL + '/api/edit', stagedAndChanges)
         .then((res) =>{
             console.log(res.data)
         })

@@ -89,13 +89,17 @@ module.exports = {
     },
     planetAdd: (req, res) => { //write a query that finds out how many stars are in the db and assigns the planets to the right star.
         // console.log(req.body)
-        let {stagedSMA, stagedSMAAU, stagedName, stagedRadius, stagedEcc, stagedTemp, stagedType, stagedStarNum} = req.body
+        let {stagedSMA, stagedSMAAU, stagedName, stagedRadius, stagedEcc, stagedTemp, stagedType} = req.body
         sequelize.query(`
         INSERT INTO planets(sma, smaAU, name, body_radius, body_ecc, body_temp, body_type)
         VALUES (${stagedSMA}, ${stagedSMAAU}, '${stagedName}', ${stagedRadius}, ${stagedEcc}, ${stagedTemp}, '${stagedType}');
+        SELECT count(id) FROM planets;
         `)
         .then(dbRes => {
             res.status(200).send(dbRes[0])
+        })
+        .catch(err => {
+            res.status(500).send(err)
         })
     },
     starNumGet: (req, res) => {
@@ -106,9 +110,22 @@ module.exports = {
             console.log(dbRes[0])
             res.status(200).send(dbRes[0])
         })
+        .catch(err => {
+            res.status(500).send(err)
+        })
     },
     starAdd: (req, res) => {
-
+        let {sendStarTemp, sendStarRadius, sendStarMass, sendStarLum} = req.body
+        sequelize.query(`
+            INSERT INTO stars(star_temp, star_radius_solar, star_mass_solar,  star_lum)
+            VALUES(${sendStarTemp}, ${sendStarRadius}, ${sendStarMass}, ${sendStarLum});
+        `)
+        .then(dbRes => {
+            res.status(200).send(dbRes[0])
+        })
+        .catch(err => {
+            res.status(500).send(err)
+        })
     },
     starAndPlanets: (req, res) => {
         let {s, p} = req.body
@@ -118,6 +135,9 @@ module.exports = {
         `)
         .then(dbRes => {
             res.status(200).send(dbRes[0])
+        })
+        .catch(err => {
+            res.status(500).send(err)
         })
     }
 }
