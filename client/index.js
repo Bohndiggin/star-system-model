@@ -352,17 +352,6 @@ function clickPresentStar(event) {
 
 bonkBtn.addEventListener('click', bonk)
 
-function calcStarColor(obj, temp) {
-    let send = {tempColor: temp}
-    axios.post(`http://localhost:5000/api/starColor`, send)
-        .then(res => {
-            console.log(res.data.starColor)
-            obj.starColor = res.data.starColor
-        })
-        .catch(err => {
-            console.log(err)
-        })
-}
 
 class Star {
     constructor () {
@@ -382,41 +371,36 @@ class Star {
         this.starHabitableZone = calcHabitableZone(this.temperature, this.starRadius * solarRadius)
         this.starDiv = document.getElementById('star')
         this.starDiv.addEventListener('click', clickPresentStar)
-        // this.calcStarColor = (temp) => {
-        //     let send = {tempColor: temp}
-        //     axios.post(`http://localhost:5000/api/starColor`, send)
-        //     .then(res => {
-        //         console.log(res.data)
-        //         return res.data
-        //     })
-        //     .catch(err => {
-        //         console.log(err)
-        //     })
-        // }
-        // this.starColor = this.calcStarColor(this.temperature)
-        this.starColor = 0xffffff
-        this.starDisplayRadius = (this.starRadius * (solarRadius / earthRadius) * displayLevel)/unrealFactor
-        this.hZRadiusClose = (this.starHabitableZone[0] / AU) * displayLevel * unrealFactor
-        this.hZRadiusFar = (this.starHabitableZone[1] / AU) * displayLevel * unrealFactor
-        this.display = new PIXI.Graphics()
-        this.display.lineStyle(0)
-        this.display.beginFill(this.starColor)
-        this.display.drawCircle(500, 500, this.starDisplayRadius)
-        this.display.endFill()
-        app.stage.addChild(this.display)
-        this.displayHZFar = new PIXI.Graphics()
-        this.displayHZFar.lineStyle(1, 0xffffff)
-        // this.displayHZFar.beginFill({color: 0xffffff, alpha: 1})
-        this.displayHZFar.drawCircle(500, 500, this.hZRadiusFar)
-        this.displayHZFar.endFill()
-        app.stage.addChild(this.displayHZFar)
-        this.displayHZClose = new PIXI.Graphics()
-        this.displayHZClose.lineStyle(1, 0xffffff)
-        // this.displayHZClose.beginFill({color: 0xffffff, alpha: 0})
-        this.displayHZClose.drawCircle(500, 500, this.hZRadiusClose)
-        this.displayHZClose.endFill()
-        app.stage.addChild(this.displayHZClose)
-        this.starDiv.style.backgroundColor = this.starColor
+        let send = {tempColor: this.temperature}
+        axios.post(localURL + '/api/starColor', send)
+            .then(res => {
+                this.starColor = res.data.starColor
+                this.starColorHex = res.data.starColorHex
+                this.starColorNum = res.data.starColorNum
+                this.starDisplayRadius = (this.starRadius * (solarRadius / earthRadius) * displayLevel)/unrealFactor
+                this.hZRadiusClose = (this.starHabitableZone[0] / AU) * displayLevel * unrealFactor
+                this.hZRadiusFar = (this.starHabitableZone[1] / AU) * displayLevel * unrealFactor
+                this.display = new PIXI.Graphics()
+                this.display.lineStyle(0)
+                this.display.beginFill(this.starColor)
+                this.display.drawCircle(500, 500, this.starDisplayRadius)
+                this.display.endFill()
+                app.stage.addChild(this.display)
+                this.displayHZFar = new PIXI.Graphics()
+                this.displayHZFar.lineStyle(1, this.starColorNum)
+                this.displayHZFar.drawCircle(500, 500, this.hZRadiusFar)
+                this.displayHZFar.endFill()
+                app.stage.addChild(this.displayHZFar)
+                this.displayHZClose = new PIXI.Graphics()
+                this.displayHZClose.lineStyle(1, this.starColorNum)
+                this.displayHZClose.drawCircle(500, 500, this.hZRadiusClose)
+                this.displayHZClose.endFill()
+                app.stage.addChild(this.displayHZClose)
+                this.starDiv.style.backgroundColor = this.starColorHex
+            })
+            .catch(err => {
+                console.log(err)
+            })
         let sendStar = {
             sendStarTemp: this.temperature,
             sendStarRadius: this.starRadius,
