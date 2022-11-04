@@ -155,8 +155,5 @@ module.exports = {
     },
     utilsGet: (req, res) => {
         res.sendFile(path.join(__dirname, '../client/utils.js'))
-    },
-    pixiGet: (req, res) => {
-        res.sendFile(path.join(__dirname, '../node_modules/'))
-    }
+    }    
 }
