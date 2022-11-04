@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize')
+const path = require('path');
 require('dotenv')
 const sequelize = new Sequelize(process.env.CONNECTION_STRING, {
     dialect: 'postgres',
@@ -139,5 +140,23 @@ module.exports = {
         .catch(err => {
             res.status(500).send(err)
         })
+    },
+    homeGet: (req, res) => {
+        res.sendFile(path.join(__dirname, '../client/index.html'))
+    },
+    homeJSGet: (req, res) => {
+        res.sendFile(path.join(__dirname, '../client/main.js'))
+    },
+    homeCSSGet: (req, res) => {
+        res.sendFile(path.join(__dirname, '../client/style.css'))
+    },
+    homeRSCSSGet: (req, res) => {
+        res.sendFile(path.join(__dirname, '../client/reset.css'))
+    },
+    utilsGet: (req, res) => {
+        res.sendFile(path.join(__dirname, '../client/utils.js'))
+    },
+    pixiGet: (req, res) => {
+        res.sendFile(path.join(__dirname, '../node_modules/'))
     }
 }

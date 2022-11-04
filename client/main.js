@@ -29,10 +29,12 @@ const marsSemiMajorAxis = 1.524 * AU
 const marsRadius = 3396.2
 const marsTemp = 213.15
 
-const {ranDumb, getRandomColor, makeSGP, AUConvert, calcOrbitalSpeed, calcOrbitalSpeedKmps, calcOrbitalPeriod, calcGravitationalForce, calcStarRadius, calcStarLuminosity, calcHabitableZone, classifyStar, calcBodyTempSolar, clacBodyComposition, calcBodyTypeFirstPass, calcBodyTypeSecondPass, calcBodyAtmosphere, calcBodyTempAtmosphere, calcIceBlast, calcBodyMass, calcBodyGravity} = require('./utils')
+// const {ranDumb, getRandomColor, makeSGP, AUConvert, calcOrbitalSpeed, calcOrbitalSpeedKmps, calcOrbitalPeriod, calcGravitationalForce, calcStarRadius, calcStarLuminosity, calcHabitableZone, classifyStar, calcBodyTempSolar, clacBodyComposition, calcBodyTypeFirstPass, calcBodyTypeSecondPass, calcBodyAtmosphere, calcBodyTempAtmosphere, calcIceBlast, calcBodyMass, calcBodyGravity} = require('./utils')
 
-// import {ranDumb, getRandomColor, makeSGP, AUConvert, calcOrbitalSpeed, calcOrbitalSpeedKmps, calcOrbitalPeriod, calcGravitationalForce, calcStarRadius, calcStarLuminosity, calcHabitableZone, classifyStar, calcBodyTempSolar, clacBodyComposition, calcBodyTypeFirstPass, calcBodyTypeSecondPass, calcBodyAtmosphere, calcBodyTempAtmosphere, calcIceBlast, calcBodyMass, calcBodyGravity} from './utils';
+import {ranDumb, getRandomColor, makeSGP, AUConvert, calcOrbitalSpeed, calcOrbitalSpeedKmps, calcOrbitalPeriod, calcGravitationalForce, calcStarRadius, calcStarLuminosity, calcHabitableZone, classifyStar, calcBodyTempSolar, clacBodyComposition, calcBodyTypeFirstPass, calcBodyTypeSecondPass, calcBodyAtmosphere, calcBodyTempAtmosphere, calcIceBlast, calcBodyMass, calcBodyGravity} from '/utils';
 
+
+console.log(ranDumb(15, 60))
 let planetNumber = 0
 let jsBodies = []
 let displayElement = document.querySelector('display')

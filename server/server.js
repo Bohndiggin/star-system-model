@@ -9,8 +9,14 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-const { calcStarColor, calcEdits, planetAdd, starNumGet, starAdd, starAndPlanets } = require('./controller')
+const { homeGet, homeJSGet, utilsGet, homeRSCSSGet, homeCSSGet,  calcStarColor, calcEdits, planetAdd, starNumGet, starAdd, starAndPlanets } = require('./controller')
 
+
+app.get('/', homeGet)
+app.get('/js', homeJSGet)
+app.get('/utils', utilsGet)
+app.get('/rscss', homeRSCSSGet)
+app.get('/css', homeCSSGet)
 app.post('/api/starColor', calcStarColor)
 app.post('/api/edit', calcEdits)
 app.post('/api/planetAdd', planetAdd)
