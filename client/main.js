@@ -55,7 +55,7 @@ let childrenMap = rowMap.children
 let unrealFactor = 500
 let editMode = false
 
-let localURL = 'http://localhost:4444'
+let localURL = ''
 
 
 const app = new PIXI.Application ( {
