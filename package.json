@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "main": ">=16.17.1"
+  },
   "scripts": {
     "start": "node server/server.js"
   },
