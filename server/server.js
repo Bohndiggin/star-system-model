@@ -1,12 +1,12 @@
 const express = require('express')
-const cors = require('cors')
+// const cors = require('cors')
 require('dotenv').config()
 
 const Sequelize = require('sequelize')
 
 const app = express()
 
-app.use(cors())
+// app.use(cors())
 app.use(express.json())
 
 const { homeGet, seedFunc, homeJSGet, utilsGet, homeRSCSSGet, homeCSSGet,  calcStarColor, calcEdits, planetAdd, starNumGet, starAdd, starAndPlanets } = require('./controller')
