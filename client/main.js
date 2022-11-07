@@ -417,7 +417,13 @@ class Planet {
                     }
                 }
                 let editSendBtn = document.getElementById('submitChange')
-                editSendBtn.addEventListener('click', this.bodyEdit)
+                editSendBtn.addEventListener('click', () => {
+                    let edited = {
+                        ecc: this.editable[0].input.var.value,
+                        smaAU: this.editable[0].input.var.value
+                    }
+                    this.bodyEdit(edited)
+                })
             }
         }
     }
@@ -428,11 +434,10 @@ class Planet {
             this.display.filters[0].outerStrength = 0
         }
     }
-    bodyEdit() { //how to account for the various ways they can be changed?
+    bodyEdit(edited) { //how to account for the various ways they can be changed?
         //step 1. Compare 'this' to new values 
         //step 2. gather changes and send 'this' and changed
         //step 3. determine what needs to change on the back end.
-        this.editable
         let staged = {
             stagedSMA: this.bodySemiMajorAxis,
             stagedSMAAU: this.bodySemiMajorAxisAU,
@@ -444,7 +449,7 @@ class Planet {
         }
         let stagedAndChanges = {
             curr: staged,
-            changes: this.editable
+            changes: edited
         }
         axios.post(localURL + '/api/edit', stagedAndChanges)
         .then((res) =>{

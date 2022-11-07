@@ -8,7 +8,9 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
             rejectUnauthorized: false
         }
     }
-  })
+})
+
+import {ranDumb, getRandomColor, makeSGP, AUConvert, calcOrbitalSpeed, calcOrbitalSpeedKmps, calcOrbitalPeriod, calcGravitationalForce, calcStarRadius, calcStarLuminosity, calcHabitableZone, classifyStar, calcBodyTempSolar, clacBodyComposition, calcBodyTypeFirstPass, calcBodyTypeSecondPass, calcBodyAtmosphere, calcBodyTempAtmosphere, calcIceBlast, calcBodyMass, calcBodyGravity} from '/utils';
 
 function rgbToHex (r, g, b) {
     let rHex, gHex, bHex
@@ -85,8 +87,32 @@ module.exports = {
         res.status(200).send(response)
     },
     calcEdits: (req, res) => {
-        let edited = req.body.editable
-        let original = [req.body.bodySemiMajorAxisAU, req.body.eccentricity]
+        const {curr, changes} = req.body
+        const { stagedSMA, stagedSMAAU, stagedName, stagedRadius, stagedEcc, stagedTemp, stagedType } = curr
+        const { ecc, smaAU } = changes
+        // if nothing has changed, do nothing
+        // if there is a change send the new values.
+        let current = [stagedEcc, stagedSMAAU]
+        let changed = [ecc, smaAU]
+        if (current === changed) {
+            res.sendStatus(400)
+        } else {
+            let numChanged = 0
+            for (let i = 0; i < changed.length; i++) {
+                if (current[i] !== changed[i]) {
+                    numChanged++
+                } else {
+                    continue
+                }
+            }
+            if(numChanged === current.length) {
+                let fullChanges = {
+                    resEcc: ecc,
+                    resSMAAU: smaAU
+                }
+                res.status(200).send(fullChanges)
+            }
+        }
     },
     seedFunc: (req, res) => {
         sequelize.query(`
