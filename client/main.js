@@ -551,13 +551,7 @@ editBtn.addEventListener('click', editModeStart)
 
 function editModeStop () { //collect changes and stop edit mode
     editMode = false
-    for (let i = 0; i < jsBodies.length; i++) {
-        if(jsBodies[i].selected) {
-
-        }       
-    }
     allGo()
-
 }
 
 editStpBtn.addEventListener('click', editModeStop)

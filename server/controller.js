@@ -87,7 +87,7 @@ module.exports = {
         res.status(200).send(response)
     },
     calcEdits: (req, res) => {
-        const {curr, changes} = req.body
+        const { curr, changes } = req.body
         const { stagedSMA, stagedSMAAU, stagedName, stagedRadius, stagedEcc, stagedTemp, stagedType } = curr
         const { ecc, smaAU } = changes
         // if nothing has changed, do nothing
