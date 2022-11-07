@@ -31,8 +31,6 @@ const marsTemp = 213.15
 
 import {ranDumb, getRandomColor, makeSGP, AUConvert, calcOrbitalSpeed, calcOrbitalSpeedKmps, calcOrbitalPeriod, calcGravitationalForce, calcStarRadius, calcStarLuminosity, calcHabitableZone, classifyStar, calcBodyTempSolar, clacBodyComposition, calcBodyTypeFirstPass, calcBodyTypeSecondPass, calcBodyAtmosphere, calcBodyTempAtmosphere, calcIceBlast, calcBodyMass, calcBodyGravity} from '/utils';
 
-
-console.log(ranDumb(15, 60))
 let planetNumber = 0
 let jsBodies = []
 let displayElement = document.querySelector('display')
@@ -529,8 +527,6 @@ function slowReverse() {
 }
 
 rvBtn.addEventListener('click', slowReverse)
-
-
 
 function bench() {
     createNBodies(1000, star)

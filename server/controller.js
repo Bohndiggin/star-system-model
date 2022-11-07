@@ -88,6 +88,47 @@ module.exports = {
         let edited = req.body.editable
         let original = [req.body.bodySemiMajorAxisAU, req.body.eccentricity]
     },
+    seedFunc: (req, res) => {
+        sequelize.query(`
+        DROP TABLE IF EXISTS stars_to_planets;
+        DROP TABLE IF EXISTS planets;
+        DROP TABLE IF EXISTS stars;
+        CREATE TABLE planets(
+            id SERIAL PRIMARY key,
+            sma FLOAT,
+            smaAU FLOAT,
+            name varchar(25),
+            body_radius FLOAT,
+            body_ecc FLOAT,
+            body_temp FLOAT,
+            body_type VARCHAR(50)
+          );
+          
+          CREATE TABLE stars(
+            id SERIAL PRIMARY key,
+            star_temp FLOAT,
+            star_radius_solar FLOAT,
+            star_mass_solar FLOAT,
+            star_lum FLOAT
+          );
+          
+          
+          CREATE TABLE stars_to_planets (
+            id SERIAL PRIMARY key,
+            star_id INT,
+            planet_id INT,
+            FOREIGN KEY (star_id) REFERENCES stars(id),
+            FOREIGN KEY (planet_id) REFERENCES planets(id)
+          
+          );
+        `)
+        .then(dbRes => {
+            res.status(200).send(dbRes[0])
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    },
     planetAdd: (req, res) => { //write a query that finds out how many stars are in the db and assigns the planets to the right star.
         // console.log(req.body)
         let {stagedSMA, stagedSMAAU, stagedName, stagedRadius, stagedEcc, stagedTemp, stagedType} = req.body
