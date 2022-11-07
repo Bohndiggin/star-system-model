@@ -25,6 +25,6 @@ app.get('/api/starNumGet', starNumGet)
 app.post('/api/starAdd', starAdd)
 app.post('/api/star-system', starAndPlanets)
 
-const PORT = process.env.SERVER_PORT
+const PORT = process.env.PORT
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`))
