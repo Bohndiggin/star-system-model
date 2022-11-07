@@ -456,6 +456,7 @@ class Planet {
             this.eccentricity = res.data.resECC
             this.bodySemiMajorAxisAU = res.data.resSMAAU
             this.bodySemiMajorAxis = this.bodySemiMajorAxisAU * AU
+            this.bodySemiMinorAxis = this.bodySemiMajorAxis * Math.sqrt(1 - this.eccentricity**2)
         })
         .catch((err) => {
             console.log('bodyEdit had ' + err)
