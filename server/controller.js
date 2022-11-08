@@ -103,7 +103,7 @@ module.exports = {
         } else {
         //for each curr stat if changed !== stat then fullChanges.resStat = changed version else fullChanges.resStat = original stat.
             for (let i = 0; i < changed.length; i++) {
-                if (current[i] === changed[i] || changed[i] === null) {
+                if (current[i] === changed[i] || changed[i] === undefined) {
                     fullChanges[Object.keys(fullChanges)[i]] = current[i]
                 } else {
                     fullChanges[Object.keys(fullChanges)[i]] = changed[i]
