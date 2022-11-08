@@ -454,8 +454,8 @@ class Planet {
         axios.post(localURL + '/api/edit', stagedAndChanges)
         .then((res) =>{
             console.log(res.data)
-            this.eccentricity = res.data.resECC
-            this.bodySemiMajorAxisAU = res.data.resSMAAU
+            this.eccentricity = +res.data.resECC
+            this.bodySemiMajorAxisAU = +res.data.resSMAAU
             this.bodySemiMajorAxis = this.bodySemiMajorAxisAU * AU
             this.bodySemiMinorAxis = this.bodySemiMajorAxis * Math.sqrt(1 - this.eccentricity**2)
         })
