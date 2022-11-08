@@ -457,6 +457,7 @@ class Planet {
             this.eccentricity = +res.data.resEcc
             this.bodySemiMajorAxisAU = +res.data.resSMAAU
             this.bodySemiMajorAxis = this.bodySemiMajorAxisAU * AU
+            this.bodyF = this.bodySemiMajorAxis * this.eccentricity
             this.bodySemiMinorAxis = this.bodySemiMajorAxis * Math.sqrt(1 - this.eccentricity**2)
         })
         .catch((err) => {
