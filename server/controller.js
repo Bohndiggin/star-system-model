@@ -101,6 +101,7 @@ module.exports = {
         if (current === changed) {
             res.sendStatus(400)
         } else {
+            console.log(smaAU)
         //for each curr stat if changed !== stat then fullChanges.resStat = changed version else fullChanges.resStat = original stat.
             for (let i = 0; i < changed.length; i++) {
                 if (current[i] === changed[i] || changed[i] === undefined) {
