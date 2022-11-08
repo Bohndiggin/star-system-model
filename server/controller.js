@@ -94,24 +94,22 @@ module.exports = {
         // if there is a change send the new values.
         let current = [stagedEcc, stagedSMAAU]
         let changed = [ecc, smaAU]
+        let fullChanges = {
+            resEcc: 0,
+            resSMAAU: 0
+        }
         if (current === changed) {
             res.sendStatus(400)
         } else {
-            let numChanged = 0
+        //for each curr stat if changed !== stat then fullChanges.resStat = changed version else fullChanges.resStat = original stat.
             for (let i = 0; i < changed.length; i++) {
-                if (current[i] !== changed[i]) {
-                    numChanged++
+                if (current[i] === changed[i] || changed[i] === null) {
+                    fullChanges[Object.keys(fullChanges)[i]] = current[i]
                 } else {
-                    continue
+                    fullChanges[Object.keys(fullChanges)[i]] = changed[i]
                 }
             }
-            if(numChanged === current.length) {
-                let fullChanges = {
-                    resEcc: ecc,
-                    resSMAAU: smaAU
-                }
-                res.status(200).send(fullChanges)
-            }
+            res.status(200).send(fullChanges)
         }
     },
     seedFunc: (req, res) => {
