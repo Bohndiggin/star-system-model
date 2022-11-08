@@ -420,7 +420,7 @@ class Planet {
                 editSendBtn.addEventListener('click', () => {
                     let edited = {
                         ecc: this.editable[0].input.var.value,
-                        smaAU: this.editable[0].input.var.value
+                        smaAU: this.editable[1].input.var.value
                     }
                     this.bodyEdit(edited)
                 })
