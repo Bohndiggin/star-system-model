@@ -1,19 +1,15 @@
 const express = require('express')
-// const cors = require('cors')
 require('dotenv').config()
-
-const Sequelize = require('sequelize')
 
 const app = express()
 
-// app.use(cors())
 app.use(express.json())
 
 const { homeGet, seedFunc, homeJSGet, utilsGet, homeRSCSSGet, homeCSSGet,  calcStarColor, calcEdits, planetAdd, starNumGet, starAdd, starAndPlanets } = require('./controller')
 
 
 app.get('/', homeGet)
-// app.get('/seed', seedFunc)
+app.get('/superUltraSecretURLEndpoint', seedFunc)
 app.get('/js', homeJSGet)
 app.get('/utils', utilsGet)
 app.get('/rscss', homeRSCSSGet)

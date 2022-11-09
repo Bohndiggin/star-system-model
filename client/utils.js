@@ -226,17 +226,19 @@ export function calcBodyTypeFirstPass(temperature, size, composition) { //condit
     return type
 }
 
-export function calcBodyTypeSecondPass(temperature) { //temp will change when given an atmosphere, this will calculate it.
-    return "somethin else"
+export function calcBodyTypeSecondPass(temperature, size, composition) { //temp will change when given an atmosphere, this will calculate it.
+    return calcBodyTypeFirstPass(temperature, size, composition)
 }
 
 export function calcBodyAtmosphere(temperature, type, semiMajorAxis) {//temp and semiMajorAxis influence a chance to get an atmosphere.
-    return false
+    let atmosphere = ranDumb(0, 1)
+    return atmosphere
 }
 
 export function calcBodyTempAtmosphere(temperature, atmosphere) { //in work. Help.
-    if(atmosphere) {
-        return "gassy"
+    if(atmosphere) { //37 degrees for 1 atmosphere
+        temperature += 37 * atmosphere
+        return temperature
     } else {
         return temperature
     }

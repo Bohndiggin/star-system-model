@@ -35,16 +35,16 @@ let planetNumber = 0
 let jsBodies = []
 let displayElement = document.querySelector('display')
 let planetGenButton = document.getElementById('addPlanet')
-let listButton = document.getElementById('listPlanets')
-let bonkBtn = document.getElementById('bonk')
 let ffBtn = document.getElementById('ff')
 let rvBtn = document.getElementById('rv')
 let benchBtn = document.getElementById('bench')
 let panel = document.getElementById('stat-display')
 let editBtn = document.getElementById('edit')
 let editStpBtn = document.getElementById('editStop')
+let zoomInBtn = document.getElementById('zoomIn')
+let zoomOutBtn = document.getElementById('zoomOut')
 
-let cease = false
+
 let timePeriod = 10
 let zoomLevel = 10000
 let displayLevel = 500/zoomLevel
@@ -108,14 +108,6 @@ function allGo() {
 
 playBtn.addEventListener('click', allGo)
 
-function listPlanets() {
-    let htmlPlanets = planetBoxEle.children
-    console.log(htmlPlanets)
-    console.log()
-}
-
-listButton.addEventListener('click', listPlanets)
-
 function clickPresent(obj) {
     let bodyCaught = null
     for (let i = 0; i < jsBodies.length; i++) {
@@ -138,9 +130,6 @@ function clickPresentStar(event) {
     }
     star.showStarStats()
 }
-
-bonkBtn.addEventListener('click', bonk)
-
 
 class Star {
     constructor () {
@@ -198,7 +187,7 @@ class Star {
         }
         axios.post(localURL + '/api/starAdd/', sendStar)
             .then(res => {
-                console.log(res.data)
+                // console.log(res.data)
             })
             .catch(err => {
                 console.log(err)
@@ -231,7 +220,6 @@ class Planet {
         this.eccentricity = ranDumb(0.001, 0.999)
         this.bodyRadius = ranDumb(600, 9999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         this.bodyComposition = clacBodyComposition()
-        //this.bodyType = calcBodyTypeSecondPass()
         this.bodyComposition = calcIceBlast(this)
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
@@ -250,6 +238,7 @@ class Planet {
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
+        this.bodyType = calcBodyTypeSecondPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyParameter = ((this.specificAngularMomentum ** 2) / this.sGP)
         this.bodyPeriapsis = this.bodySemiMajorAxis * (1-this.eccentricity)
         this.bodyApoapsis = this.bodySemiMajorAxis * (1+this.eccentricity)
@@ -276,9 +265,7 @@ class Planet {
         this.bodyXLocation = 500
         this.bodyYLocation = 500
         this.bodyCurrTemp = 0
-        this.cease = false
         this.bodyRadiusEarth = this.bodyRadius/earthRadius
-        this.bodyLocations = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
         this.display = new PIXI.Graphics()
         this.display.lineStyle(0)
         this.display.beginFill(this.planetColor.num)
@@ -288,13 +275,11 @@ class Planet {
         this.display.filters = [new PIXI.filters.GlowFilter({distance: 10, outerStrength: 0})]
         this.display.endFill()
         this.display.on('pointerdown', onDragStart)
-        // this.display.on('pointerdown', clickPresent)
         this.display.on('pointerup', onDragEnd)
         this.display.on('pointerupoutside', onDragEnd)
         this.display.on('pointermove', onDragMove)
         app.stage.addChild(this.display)
         document.getElementById(this.bodyName).addEventListener('click', function () {clickPresent(this)})
-        console.log(this.bodyName)
         let staged = {
             stagedSMA: this.bodySemiMajorAxis,
             stagedSMAAU: this.bodySemiMajorAxisAU,
@@ -326,6 +311,7 @@ class Planet {
     }
     updateTemperature(distance) {
         this.bodyCurrTemp = calcBodyTempSolar(this.starOrbiting.temperature, (this.starOrbiting.starKmRadius), distance)
+        this.bodyCurrTemp = calcBodyTempAtmosphere(this.bodyCurrTemp, this.bodyAtmosphere)
     }
     updateLocation() {
         this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))
@@ -334,8 +320,6 @@ class Planet {
         this.bodyXOrbitJourney += this.currBodySpeed / AU
         this.bodyXLocation = ((((this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney)- this.bodyF) / AU) * unrealFactor) * displayLevel) + this.offset
         this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * displayLevel) + this.offset
-        this.bodyLocations.shift(0)
-        this.bodyLocations.push([this.bodyXLocation, this.bodyYLocation])
         if(!this.dragging) {
             this.display.position.x = this.bodyXLocation
             this.display.position.y = this.bodyYLocation
@@ -350,8 +334,11 @@ class Planet {
                 <h3 id="planetName">Name: ${this.bodyName}</h3>
                 <p id="planet type">Type: ${this.bodyType}</p>
                 <h4 id="planetPhysicalInfo">Physical Info:</h4>
-                <p id="planetComposition">Composition: ${this.bodyComposition}</p>
+                <p id="planetComposition">Composition (ice): ${this.bodyComposition.ice}</p>
+                <p id="planetComposition">Composition (rock): ${this.bodyComposition.rock}</p>
+                <p id="planetComposition">Composition (metal): ${this.bodyComposition.metal}</p>
                 <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
+                <p id="planetAtmosphere">Atmosphere: ${this.bodyAtmosphere}</p>
                 <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
                 <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>
                 <p id="planetMassEarths">Earth Masses: ${this.bodyMass/earthMass}</p>
@@ -383,7 +370,9 @@ class Planet {
                 <h3 id="planetName">Name: ${this.bodyName}</h3>
                 <p id="planet type">Type: ${this.bodyType}</p>
                 <h4 id="planetPhysicalInfo">Physical Info:</h4>
-                <p id="planetComposition">Composition: ${this.bodyComposition}</p>
+                <p id="planetComposition">Composition (ice): ${this.bodyComposition.ice}</p>
+                <p id="planetComposition">Composition (rock): ${this.bodyComposition.rock}</p>
+                <p id="planetComposition">Composition (metal): ${this.bodyComposition.metal}</p>
                 <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
                 <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
                 <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>
@@ -529,6 +518,14 @@ function zoomIn() {
     zoomLevel -= 500
     displayLevel = (500/zoomLevel)
 }
+zoomInBtn.addEventListener('click', zoomIn)
+
+function zoomOut() {
+    zoomLevel += 500
+    displayLevel = 500/zoomLevel
+}
+
+zoomOutBtn.addEventListener('click', zoomOut)
 
 ffBtn.addEventListener('click', fastForward)
 
