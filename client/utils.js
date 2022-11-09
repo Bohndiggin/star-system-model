@@ -245,15 +245,22 @@ export function calcBodyTempAtmosphere(temperature, atmosphere) { //in work. Hel
 }
 
 export function calcIceBlast(obj) { //if the body temperature is above boiling, we'll blast away any water on the planet.
-    if(obj.temperature > kBoilingPoint) {
-        obj.bodyRadius -= obj.bodyRadius * (obj.composition.ice/100)
-        obj.composition.ice = 0
-        let rockTemporary = (obj.composition.rock / (obj.composition.rock + obj.composition.metal)) * 100
-        let metalTemporary = (obj.composition.metal / (obj.composition.metal + obj.composition.rock)) * 100
-        obj.composition.rock = rockTemporary
-        obj.composition.metal = metalTemporary
+    if(obj.bodyTemperature > kBoilingPoint) {
+        obj.bodyRadius -= obj.bodyRadius * (obj.bodyComposition.ice/100)
+        let newComposition = {
+            ice: 0,
+            rock: 0,
+            metal: 0
+        }
+        newComposition.ice = 0
+        let rockTemporary = (obj.bodyComposition.rock / (obj.bodyComposition.rock + obj.bodyComposition.metal)) * 100
+        let metalTemporary = (obj.bodyComposition.metal / (obj.bodyComposition.metal + obj.bodyComposition.rock)) * 100
+        newComposition.rock = rockTemporary
+        newComposition.metal = metalTemporary
+        return newComposition
+    } else {
+        return obj.bodyComposition
     }
-    return obj.bodyComposition
 }
 
 export function calcBodyMass(size, composition) { // using the mass of ice, rock, and uh nickel to find the stelar body's mass

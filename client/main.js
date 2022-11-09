@@ -220,7 +220,6 @@ class Planet {
         this.eccentricity = ranDumb(0.001, 0.999)
         this.bodyRadius = ranDumb(600, 9999) // PLACEHOLDER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         this.bodyComposition = clacBodyComposition()
-        this.bodyComposition = calcIceBlast(this)
         this.bodyMass = calcBodyMass(this.bodyRadius, this.bodyComposition)
         this.bodyEarthMasses = this.bodyMass / earthMass
         this.sGP = makeSGP(this.bodyMass, (this.starOrbiting.starKgMass))
@@ -238,6 +237,7 @@ class Planet {
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
+        this.bodyComposition = calcIceBlast(this)
         this.bodyType = calcBodyTypeSecondPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyParameter = ((this.specificAngularMomentum ** 2) / this.sGP)
         this.bodyPeriapsis = this.bodySemiMajorAxis * (1-this.eccentricity)
