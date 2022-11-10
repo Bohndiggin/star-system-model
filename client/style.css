@@ -2,6 +2,17 @@
     background-color: rgb(25, 25, 25);
     color: white;
 }
+/* body {
+    display: flex;
+} */
+header {
+    background-color: rgb(255, 157, 0);
+}
+nav {
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(255, 157, 0);
+}
 nav > * {
     background-color: rgb(255, 157, 0);
     color: rgb(255, 255, 255);
@@ -9,12 +20,17 @@ nav > * {
 }
 h1 {
     font: 7em sans-serif;
-    
 }
 .display {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+#newCanvas {
+    display: relative;
+    justify-content: center;
+    align-items: center;
+    width: 1000px;
 }
 #planetBox {
     position: relative;
@@ -63,7 +79,7 @@ h1 {
     width: 500px;
     border-color: rgb(255, 157, 0);
     margin: 15px;
-    justify-self: flex-start;
+    justify-self: flex-end;
     align-content: space-between;
     align-items: stretch;
 }
@@ -90,14 +106,38 @@ h1 {
     background-color: rgb(255, 157, 0);
     margin: 5px;
 }
-
-
-.center-pix {
-    position: absolute;
-    left: 12px;
-    top: 12px;
-    height: 1px;
-    width: 1px;
-    justify-self: center;
-    z-index: 0;
+#controls-and-display {
+    display: flex;
+    justify-content: start;
+}
+#controls {
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(255, 157, 0);
+}
+#controls > input {
+    height: 60px;
+}
+#tutorial {
+    border: 2px;
+    font-size: 2.5rem;
+    border-style: outset;
+    display: relative;
+    height: 50px;
+    width: 50px;
+    border-radius: 50px;
+    border-color: black;
+    background-color: rgb(255, 157, 0);
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    background-color: rgb(255, 157, 0);
+    align-content: center;
+    align-items: center;
+    height: 130px;
+    width: 100%;
+}
+header > h1 {
+    background-color: rgb(255, 157, 0);
 }

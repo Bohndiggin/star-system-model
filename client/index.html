@@ -9,24 +9,31 @@
     <title>Star System Model</title>
 </head>
 <body>
-    <nav>
-        <h1>Welcome</h1>
-        <input type="button" value="add a planet" id="addPlanet">
-        <input type="button" value="Bonk" id="bonk">
-        <input type="button" value="RV" id="rv">
-        <input type="button" value="Play" id="play">
-        <input type="button" value="Stop" id="stop">
-        <input type="button" value="FF" id="ff">
-        <input type="button" value="Bench" id="bench">
-        <input type="button" value="Edit Mode" id="edit">
-        <input type="button" value="Edit Stop" id="editStop">
-        <input type="button" value="+" id="zoomIn">
-        <input type="button" value="-" id="zoomOut">
-    </nav>
-    <section class="display">
-        <section id="newCanvas"></section>
-        <aside id="stat-display">
-        </aside>
+    <header>
+        <h1>Star System Model</h1>
+        <!-- add a tutorial of some sort -->
+        <nav>
+            <input type="button" value="?" id="tutorial">
+        </nav>
+    </header>
+    <section id="controls-and-display">
+        <section id="controls">
+            <input type="button" value="add a planet" id="addPlanet">
+            <input type="button" value="RV" id="rv">
+            <input type="button" value="Play" id="play">
+            <input type="button" value="Stop" id="stop">
+            <input type="button" value="FF" id="ff">
+            <input type="button" value="Bench" id="bench">
+            <input type="button" value="Edit Mode" id="edit">
+            <input type="button" value="Edit Stop" id="editStop">
+            <input type="button" value="+" id="zoomIn">
+            <input type="button" value="-" id="zoomOut">
+        </section>
+        <section class="display">
+            <section id="newCanvas"></section>
+            <aside id="stat-display">
+            </aside>
+        </section>
     </section>
     <section id="row-map">
         <div id="star"></div>

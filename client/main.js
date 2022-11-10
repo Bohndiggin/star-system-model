@@ -33,7 +33,7 @@ import {ranDumb, getRandomColor, makeSGP, AUConvert, calcOrbitalSpeed, calcOrbit
 
 let planetNumber = 0
 let jsBodies = []
-let displayElement = document.querySelector('display')
+let displayElement = document.querySelector('.display')
 let planetGenButton = document.getElementById('addPlanet')
 let ffBtn = document.getElementById('ff')
 let rvBtn = document.getElementById('rv')
@@ -43,6 +43,7 @@ let editBtn = document.getElementById('edit')
 let editStpBtn = document.getElementById('editStop')
 let zoomInBtn = document.getElementById('zoomIn')
 let zoomOutBtn = document.getElementById('zoomOut')
+let tutorialBtn = document.getElementById('tutorial')
 
 
 let timePeriod = 10
@@ -61,7 +62,9 @@ let localURL = ''
 const app = new PIXI.Application ( {
     width: 1000,
     height: 1000,
-    antialias: true
+    antialias: true,
+    resizeTo: displayElement,
+    resolution: 1
 })
 // app.stage.interactive = true
 
