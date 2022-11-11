@@ -240,11 +240,12 @@ class Planet {
         this.bodyType = calcBodyTypeFirstPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyAtmosphere = calcBodyAtmosphere(this.bodyTemperature, this.bodyType, this.bodySemiMajorAxis)
         this.bodyTemperature = calcBodyTempAtmosphere(this.bodyTemperature, this.bodyAtmosphere)
-        this.bodyComposition = calcIceBlast(this)
-        this.bodyType = calcBodyTypeSecondPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyParameter = ((this.specificAngularMomentum ** 2) / this.sGP)
         this.bodyPeriapsis = this.bodySemiMajorAxis * (1-this.eccentricity)
         this.bodyApoapsis = this.bodySemiMajorAxis * (1+this.eccentricity)
+        this.maxTemp = calcBodyTempAtmosphere(calcBodyTempSolar(this.starOrbiting.temperature, this.starOrbiting.starKmRadius, this.bodyPeriapsis), this.bodyAtmosphere)
+        this.bodyComposition = calcIceBlast(this)
+        this.bodyType = calcBodyTypeSecondPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyF = this.bodySemiMajorAxis * this.eccentricity
         this.bodyOrbitalPeriod = 2 * Math.PI * Math.sqrt(this.bodySemiMajorAxis**3 / this.sGP)
         this.bodyMoons = 0
@@ -341,6 +342,7 @@ class Planet {
                 <p id="planetComposition">Composition (rock): ${this.bodyComposition.rock}</p>
                 <p id="planetComposition">Composition (metal): ${this.bodyComposition.metal}</p>
                 <p id="planetTemperature">Temperature: ${this.bodyTemperature}</p>
+                <p id="planetTemperature">Max Temperature: ${this.maxTemp}</p>
                 <p id="planetAtmosphere">Atmosphere: ${this.bodyAtmosphere}</p>
                 <p id="planetSizeEarths">Size (Relative to Earth): ${this.bodyRadius/earthRadius}</p>
                 <p id="planetMassKg">Mass (Kg): ${this.bodyMass}</p>

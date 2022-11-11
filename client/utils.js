@@ -245,7 +245,7 @@ export function calcBodyTempAtmosphere(temperature, atmosphere) { //in work. Hel
 }
 
 export function calcIceBlast(obj) { //if the body temperature is above boiling, we'll blast away any water on the planet.
-    if(obj.bodyTemperature > kBoilingPoint) {
+    if(obj.maxTemp > kBoilingPoint) {
         obj.bodyRadius -= obj.bodyRadius * (obj.bodyComposition.ice/100)
         let newComposition = {
             ice: 0,
