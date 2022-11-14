@@ -44,6 +44,17 @@ let editStpBtn = document.getElementById('editStop')
 let zoomInBtn = document.getElementById('zoomIn')
 let zoomOutBtn = document.getElementById('zoomOut')
 let tutorialBtn = document.getElementById('tutorial')
+let startOverlay = document.getElementById('wholeOverlay')
+let startBtn = document.getElementById('submitCustomStar')
+let customStarTemp = document.getElementById('customStarTemp')
+let customStarMass = document.getElementById('customStarMass')
+let quickstartButton = document.getElementById('quickstartButton')
+let star0Btn = document.getElementById('star0')
+let star1Btn = document.getElementById('star1')
+let star2Btn = document.getElementById('star2')
+let star3Btn = document.getElementById('star3')
+let star4Btn = document.getElementById('star4')
+let star5Btn = document.getElementById('star5')
 
 
 let timePeriod = 10
@@ -135,13 +146,18 @@ function clickPresentStar(event) {
 }
 
 class Star {
-    constructor () {
-        let currentClass = ranDumb(1, 10000)/100
-        for(let j = 0;j < starTypeArr.length;j++) {
-            if (currentClass <= starTypeArr[j].frequency) { //using Math.random I generate the stats of the stars.
-                this.temperature = 5700//ranDumb(starTypeArr[j].minTemp, starTypeArr[j].maxTemp)
-                this.starMass = 1 //ranDumb(starTypeArr[j].minMass, starTypeArr[j].maxMass)
-                break
+    constructor (temperature=0, mass=0) {
+        if(temperature) {
+            this.temperature = temperature
+            this.starMass = mass
+        } else {
+            let currentClass = ranDumb(1, 10000)/100
+            for(let j = 0;j < starTypeArr.length;j++) {
+                if (currentClass <= starTypeArr[j].frequency) { //using Math.random I generate the stats of the stars.
+                    this.temperature = ranDumb(starTypeArr[j].minTemp, starTypeArr[j].maxTemp)
+                    this.starMass = ranDumb(starTypeArr[j].minMass, starTypeArr[j].maxMass)
+                    break
+                }
             }
         }
         this.starRadius = calcStarRadius(this.starMass)
@@ -459,8 +475,8 @@ class Planet {
         })
     }
 }
-
-let star = new Star()
+//logic here to determine if it's been given a specific star or not.
+// let star = new Star(5700, 1)
 
 function addPlanet() {
     createNBodies(1, star)
@@ -560,12 +576,65 @@ function editModeStop () { //collect changes and stop edit mode
 
 editStpBtn.addEventListener('click', editModeStop)
 
+let star = null
+
+function start(custom=0) {
+    if (custom === 1) {
+        let starTempTemp = customStarTemp.value
+        let starMassTemp = customStarMass.value
+        star = new Star(+starTempTemp, +starMassTemp)
+    } else {
+        star = new Star(0, 0)
+    }
+    startOverlay.innerHTML = ''
+}
+
+startBtn.addEventListener('click', () => { 
+    start(1)
+})
+
+quickstartButton.addEventListener('click', () => {
+    star = new Star(5700, 1)
+    startOverlay.innerHTML = ''
+    createNBodies(15, star)
+})
+
+star0Btn.addEventListener('click', () => {
+    star = new Star(5700, 1)
+    startOverlay.innerHTML = ''
+})
+
+star1Btn.addEventListener('click', () => {
+    star = new Star(9940, 2)
+    startOverlay.innerHTML = ''
+})
+
+star2Btn.addEventListener('click', () => {
+    star = new Star(2749, 0.11)
+    startOverlay.innerHTML = ''
+})
+
+star3Btn.addEventListener('click', () => {
+    star = new Star(12100, 21)
+    startOverlay.innerHTML = ''
+})
+
+star4Btn.addEventListener('click', () => {
+    star = new Star(3600, 16.5)
+    startOverlay.innerHTML = ''
+})
+
+star5Btn.addEventListener('click', () => {
+    star = new Star(35500, 250)
+    startOverlay.innerHTML = ''
+})
+
 
 update()
 //testing math here.
 
 
 
-createNBodies(15, star)
+// createNBodies(15, star)
 app.start()
 //notes:

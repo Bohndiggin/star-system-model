@@ -9,6 +9,28 @@
     <title>Star System Model</title>
 </head>
 <body>
+    <div id="wholeOverlay">
+        <div id="startOverlay" class="overlay">
+            <div class="overlay-content">
+                <h2>Make Your Star</h2>
+                <label for="star-temp">Star Temp</label>
+                <input type="text" name="star-temp" id="customStarTemp">
+                <label for="star-mass">Star Mass</label>
+                <input type="text" name="star-mass" id="customStarMass">
+                <input type="button" id="submitCustomStar" value="submit"></input>
+                <h3>Or Choose A Star From Below!</h3>
+                <section id="starChoicesArray">
+                    <div id="star0" class="starsChoices">sol</div>
+                    <div id="star1" class="starsChoices">sirius</div>
+                    <div id="star2" class="starsChoices">wolf359</div>
+                    <div id="star3" class="starsChoices">rigel</div>
+                    <div id="star4" class="starsChoices">betelgeuse</div>
+                    <div id="star5" class="starsChoices">westerhout_49_2</div>
+                </section>
+                <input type="button" value="Quickstart" id="quickstartButton">
+            </div>
+        </div>
+    </div>
     <header>
         <h1>Star System Model</h1>
         <!-- add a tutorial of some sort -->
