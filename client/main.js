@@ -350,7 +350,7 @@ class Planet {
     presentInfo () {
         if(this.selected) {
             if(!editMode) {
-                let stats = `<h2 id="planetInfo">Planet Info</h2>
+                let stats  = `<h2 id="planetInfo">Planet Info</h2>
                 <h3 id="planetName">Name: ${this.bodyName}</h3>
                 <p id="planet type">Type: ${this.bodyType}</p>
                 <h4 id="planetPhysicalInfo">Physical Info:</h4>
