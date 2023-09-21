@@ -263,7 +263,9 @@ class Planet {
         this.bodyComposition = calcIceBlast(this)
         this.bodyType = calcBodyTypeSecondPass(this.bodyTemperature, this.bodyRadius, this.bodyComposition)
         this.bodyF = this.bodySemiMajorAxis * this.eccentricity
-        this.bodyOrbitalPeriod = 2 * Math.PI * Math.sqrt(this.bodySemiMajorAxis**3 / this.sGP)
+        this.bodyOrbitalPeriod = 2 * Math.PI * Math.sqrt(this.bodySemiMajorAxis**3 / this.sGP)        
+        this.bodyRAAN = 'bubkiss'
+        this.argumentOfPerigee = ranDumb(0, 360) * Math.PI / 180
         this.bodyMoons = 0
         this.bodyRings = 0
         this.bodyGravity = calcBodyGravity(this.bodyMass, this.bodyRadius)
@@ -280,7 +282,7 @@ class Planet {
         this.offset = 500
         this.orbitalSpeed = (365/this.bodyOrbitalPeriod)
         this.planetHTML = document.getElementById(this.bodyName)
-        this.bodyXOrbitJourney = 0
+        this.trueAnomaly = 0
         this.bodyYOrbitJourney = 0
         this.bodyXLocation = 500
         this.bodyYLocation = 500
@@ -334,12 +336,13 @@ class Planet {
         this.bodyCurrTemp = calcBodyTempAtmosphere(this.bodyCurrTemp, this.bodyAtmosphere)
     }
     updateLocation() {
-        this.displayXRadius = ((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2)))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))
-        this.currBodyDistance = (((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2))/(1+this.eccentricity*Math.cos(this.bodyXOrbitJourney))))
+        this.currBodyDistance = (((this.bodySemiMajorAxisAU * (1 - this.eccentricity**2))/(1+this.eccentricity*Math.cos(this.trueAnomaly))))
         this.currBodySpeed = ((Math.sqrt(this.sGP * ((2/this.currBodyDistance)-(1/this.bodySemiMajorAxisAU))))/unrealFactor) * timePeriod / (unrealFactor/5)
-        this.bodyXOrbitJourney += this.currBodySpeed / AU
-        this.bodyXLocation = ((((this.bodySemiMajorAxis * Math.cos(this.bodyXOrbitJourney)- this.bodyF) / AU) * unrealFactor) * displayLevel) + this.offset
-        this.bodyYLocation = (((this.bodySemiMinorAxis * Math.sin(this.bodyXOrbitJourney) / AU) * unrealFactor) * displayLevel) + this.offset
+        this.trueAnomaly += this.currBodySpeed / AU
+        this.bodyXLocationPerifocal = this.currBodyDistance * Math.cos(this.trueAnomaly) * unrealFactor * displayLevel
+        this.bodyYLocationPerifocal = this.currBodyDistance * Math.sin(this.trueAnomaly) * unrealFactor * displayLevel
+        this.bodyXLocation = this.bodyXLocationPerifocal * Math.cos(this.argumentOfPerigee) - this.bodyYLocationPerifocal * Math.sin(this.argumentOfPerigee) + this.offset
+        this.bodyYLocation = this.bodyXLocationPerifocal * Math.sin(this.argumentOfPerigee) + this.bodyYLocationPerifocal * Math.cos(this.argumentOfPerigee) + this.offset
         if(!this.dragging) {
             this.display.position.x = this.bodyXLocation
             this.display.position.y = this.bodyYLocation
